@@ -1,0 +1,10 @@
+:~
+  title+'Plug'
+  info+'Plug Your Merch on Urbit'
+  color+0xff.ffff
+  version+[0 0 0]
+  website+'http://thisistheaj.com/ulysses-track-your-habits-on-urbit/'
+  license+'MIT'
+  base+'plug'
+  glob-ames+[~zod 0v0]
+==
