@@ -4,7 +4,7 @@
 +$  versioned-state
   $%  state-0
   ==
-+$  state-0  [%0 =stores:plug =default-store:plug =current-store:plug]
++$  state-0  [%0 =stores:plug =products:plug =default-store:plug =current-store:plug]
 +$  card  card:agent:gall
 --
 %-  agent:dbug
@@ -15,10 +15,7 @@
 +*  this  .
     def   ~(. (default-agent this %.n) bowl)
 ::
-++  on-init
-  ^-  (quip card _this)
-  `this(stores ~, default-store ~, current-store ~)
-::
+++  on-init  on-init:def
 ++  on-save
   ^-  vase
   !>(state)
