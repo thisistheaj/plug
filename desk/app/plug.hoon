@@ -1,9 +1,10 @@
+/-  plug
 /+  default-agent, dbug
 |%
 +$  versioned-state
   $%  state-0
   ==
-+$  state-0  [%0 val=@ud]
++$  state-0  [%0 =stores:plug =default-store:plug =current-store:plug]
 +$  card  card:agent:gall
 --
 %-  agent:dbug
@@ -16,7 +17,7 @@
 ::
 ++  on-init
   ^-  (quip card _this)
-  `this(val 42)
+  `this(stores ~, default-store ~, current-store ~)
 ::
 ++  on-save
   ^-  vase

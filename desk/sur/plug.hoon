@@ -17,9 +17,10 @@
 +$  product  [=id =title =description =images =price store-ids=(list id)]
 :: Product Sortation Data Types
 ::
++$  deed  cord
 +$  products-by-id  ((mop id product) gth)
 +$  products-by-price  ((mop price product) gth)
-+$  products-by-title  ((mop title product) gth)
++$  products-by-title  ((mop deed product) gth)
 :: Store Data
 ::
 +$  catalog  [store-id=id =products-by-id =products-by-price =products-by-title]
