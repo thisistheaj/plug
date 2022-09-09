@@ -18,7 +18,13 @@
 ::
 ++  on-init
   ^-  (quip card _this)
-  `this(stores (molt ~[[1 [id=1 title="Default Store" catalog=[id=1 ~ ~ ~] ~]]]), products ~, default-store 1, current-store 1)
+  :-  ~
+  %=  this
+    stores  (molt ~[[1 [id=1 title="Default Store" catalog=[id=1 ~ ~ ~] ~]]])
+    products  ~
+    default-store  1
+    current-store  1
+  ==
 ++  on-save
   ^-  vase
   !>(state)
