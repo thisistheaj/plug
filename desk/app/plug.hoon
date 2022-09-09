@@ -66,7 +66,7 @@
             description=description.action
             images=images.action
             price=price.action
-            ~
+            store-ids=~[1]
         ==
       ==
     ::

@@ -36,7 +36,7 @@
 ::      [%delete-product product-id=id]
 ::  ==
 +$  action
-  $%  [%add-product store-id=id =title =description =images =price store-ids=(list id)]
+  $%  [%add-product store-id=id =title =description =images =price]
   ==
 ::  Top-level Data Structures
 ::
