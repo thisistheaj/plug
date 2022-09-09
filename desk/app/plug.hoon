@@ -9,8 +9,10 @@
 ++  product-orm  ((on id product) gth)
 ++  next-index
   |=  [p=products-by-id]
-  ::  todo: handle null case for unit
-  .+  -:(need (pry:product-orm p))
+  ^-  @
+  ::  return the increment of: the greatest (aka leftmost) index, or 0
+  ::
+  .+  -:(fall (pry:product-orm p) [id=0 ~])
 --
 %-  agent:dbug
 =|  state-0
