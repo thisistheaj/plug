@@ -7,6 +7,10 @@
 +$  state-0  [%0 =stores =products =default-store =current-store]
 +$  card  card:agent:gall
 ++  product-orm  ((on id product) gth)
+++  next-index
+  |=  [p=products-by-id]
+  ::  todo: handle null case for unit
+  .+  -:(need (pry:product-orm p))
 --
 %-  agent:dbug
 =|  state-0
@@ -54,14 +58,16 @@
   ++  handle-poke
     |=  =action
     ^-  (quip card _state)
+    ~&  (next-index products.state)
+    =/  n  (next-index products.state)
     ?-  -.action
       %add-product
       :-  ~
       %=  state
         products
-        %^  put:product-orm  products  1
+        %^  put:product-orm  products  n
         %-  product
-        :*  id=1
+        :*  id=n
             title=title.action
             description=description.action
             images=images.action
