@@ -60,7 +60,14 @@
       %=  state
         products
         %^  put:product-orm  products  1
-        (product [id=1 title=title.action ~ ~ ~ ~])
+        %-  product
+        :*  id=1
+            title=title.action
+            description=description.action
+            images=images.action
+            price=price.action
+            ~
+        ==
       ==
     ::
   ==
