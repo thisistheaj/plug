@@ -1,11 +1,12 @@
-/-  plug
+/-  *plug
 /+  default-agent, dbug
 |%
 +$  versioned-state
   $%  state-0
   ==
-+$  state-0  [%0 =stores:plug =products:plug =default-store:plug =current-store:plug]
++$  state-0  [%0 =stores =products =default-store =current-store]
 +$  card  card:agent:gall
+++  p-orm  ((on id product) gth)
 --
 %-  agent:dbug
 =|  state-0
@@ -15,7 +16,9 @@
 +*  this  .
     def   ~(. (default-agent this %.n) bowl)
 ::
-++  on-init  on-init:def
+++  on-init
+  ^-  (quip card _this)
+  `this(stores (molt ~[[1 [id=1 title="Default Store" catalog=[id=1 ~ ~ ~] ~]]]), products ~, default-store 1, current-store 1)
 ++  on-save
   ^-  vase
   !>(state)
