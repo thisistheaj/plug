@@ -58,7 +58,9 @@
       %add-product
       :-  ~
       %=  state
-      products  (put:product-orm products 1 (product [id=1 title=title.action ~ ~ ~ ~]))
+        products
+        %^  put:product-orm  products  1
+        (product [id=1 title=title.action ~ ~ ~ ~])
       ==
     ::
   ==
