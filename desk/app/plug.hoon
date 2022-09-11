@@ -80,6 +80,27 @@
         ==
       ==
     ::
+        %update-product
+      ?>  (~(has by stores) store-id.action)
+      =/  s  `store`(~(got by stores) store-id.action)
+      :-  ~
+      %=  state
+        stores
+        %+  ~(put by stores)  id.s
+        :*  id=id.s
+            title=title.s
+            %^  put:catalog-orm  catalog.s  product-id.action
+            %-  product
+            :*  id=product-id.action
+                title=title.action
+                description=description.action
+                images=images.action
+                price=price.action
+            ==
+            stewards=stewards.s
+        ==
+      ==
+    ::
         %delete-product
       ?>  (~(has by stores) store-id.action)
       =/  s  `store`(~(got by stores) store-id.action)
