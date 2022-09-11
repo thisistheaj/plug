@@ -1,31 +1,23 @@
 |%
-:: Permissioning
+::  Permissioning
 ::
 +$  ship  @p
 +$  permission-level  tape
 +$  steward  [=ship =permission-level]
 +$  stewards  (map ship steward)
-:: Basic Data Types
+::  Basic Data Types
 ::
 +$  id  @
 +$  title  tape
 +$  description  tape
 +$  images  (list tape)
 +$  price  @ud
-:: Product Data
+::  Core Data Models
 ::
-+$  product  [=id =title =description =images =price store-ids=(list id)]
-:: Product Sortation Data Types
-::
-+$  deed  cord
-+$  products-by-id  ((mop id product) gth)
-+$  products-by-price  ((mop price product) gth)
-+$  products-by-title  ((mop deed product) gth)
-:: Store Data
-::
-+$  catalog  [store-id=id =products-by-id =products-by-price =products-by-title]
++$  product  [=id =title =description =images =price]
++$  catalog  ((mop id product) gth)
 +$  store  [=id =title =catalog =stewards]
-:: Poke actions
+::  Poke actions
 ::
 ::+$  action
 ::  $%  [%create-store =title]
@@ -37,12 +29,9 @@
 ::  ==
 +$  action
   $%  [%add-product store-id=id =title =description =images =price]
-      [%delete-product =id]
+      ::[%delete-product store-id=id product=id]
   ==
 ::  Top-level Data Structures
 ::
 +$  stores  (map id store)
-+$  products  products-by-id
-+$  default-store  id
-+$  current-store  id
 --

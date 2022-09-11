@@ -4,15 +4,15 @@
 +$  versioned-state
   $%  state-0
   ==
-+$  state-0  [%0 =stores =products =default-store =current-store]
++$  state-0  [%0 =stores]
 +$  card  card:agent:gall
-++  product-orm  ((on id product) gth)
+++  catalog-orm  ((on id product) gth)
 ++  next-index
-  |=  [p=products-by-id]
+  |=  [c=catalog]
   ^-  @
   ::  return the increment of: the greatest (aka leftmost) index, or 0
   ::
-  .+  -:(fall (pry:product-orm p) [id=0 ~])
+  .+  -:(fall (pry:catalog-orm c) [id=0 ~])
 --
 %-  agent:dbug
 =|  state-0
@@ -26,10 +26,7 @@
   ^-  (quip card _this)
   :-  ~
   %=  this
-    stores  (molt ~[[1 [id=1 title="Default Store" catalog=[id=1 ~ ~ ~] ~]]])
-    products  ~
-    default-store  1
-    current-store  1
+    stores  (molt ~[[1 [id=1 title="Default Store" catalog=~ stewards=~]]])
   ==
 ::
 ++  on-save
@@ -60,28 +57,34 @@
   ++  handle-poke
     |=  =action
     ^-  (quip card _state)
-    ~&  (next-index products.state)
-    =/  n  (next-index products.state)
     ?-    -.action
         %add-product
+      ?>  (~(has by stores) store-id.action)
+      =/  s  `store`(~(got by stores) store-id.action)
+      ::=/  n  (next-index products.state)
+      =/  n  1
       :-  ~
       %=  state
-        products
-        %^  put:product-orm  products  n
-        %-  product
-        :*  id=n
-            title=title.action
-            description=description.action
-            images=images.action
-            price=price.action
-            store-ids=~[1]
+        stores
+        %+  ~(put by stores)  id.s
+        :*  id=id.s
+            title=title.s
+            %^  put:catalog-orm  catalog.s  n
+            %-  product
+            :*  id=n
+                title=title.action
+                description=description.action
+                images=images.action
+                price=price.action
+            ==
+            stewards=stewards.s
         ==
       ==
     ::
-        %delete-product
-      ?>  (has:product-orm products id.action)
-      `state(products +:(del:product-orm products id.action))
-    ::
+    ::    %delete-product
+    ::  ?>  (has:product-orm products id.action)
+    ::  `state(products +:(del:product-orm products id.action))
+    ::::
   ==
 --
 ::
