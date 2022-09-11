@@ -29,7 +29,7 @@
 ::  ==
 +$  action
   $%  [%add-product store-id=id =title =description =images =price]
-      ::[%delete-product store-id=id product=id]
+      [%delete-product store-id=id product-id=id]
   ==
 ::  Top-level Data Structures
 ::

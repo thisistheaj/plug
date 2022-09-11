@@ -80,10 +80,21 @@
         ==
       ==
     ::
-    ::    %delete-product
-    ::  ?>  (has:product-orm products id.action)
-    ::  `state(products +:(del:product-orm products id.action))
-    ::::
+        %delete-product
+      ?>  (~(has by stores) store-id.action)
+      =/  s  `store`(~(got by stores) store-id.action)
+      ?>  (has:catalog-orm catalog.s product-id.action)
+      :-  ~
+      %=  state
+        stores
+        %+  ~(put by stores)  id.s
+        :*  id=id.s
+            title=title.s
+            +:(del:catalog-orm catalog.s product-id.action)
+            stewards=stewards.s
+        ==
+      ==
+    ::
   ==
 --
 ::
