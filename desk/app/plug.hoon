@@ -62,8 +62,8 @@
     ^-  (quip card _state)
     ~&  (next-index products.state)
     =/  n  (next-index products.state)
-    ?-  -.action
-      %add-product
+    ?-    -.action
+        %add-product
       :-  ~
       %=  state
         products
@@ -77,6 +77,10 @@
             store-ids=~[1]
         ==
       ==
+    ::
+        %delete-product
+      ?>  (has:product-orm products id.action)
+      `state(products +:(del:product-orm products id.action))
     ::
   ==
 --
