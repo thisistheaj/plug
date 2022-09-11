@@ -58,7 +58,7 @@
     |=  =action
     ^-  (quip card _state)
     ?-    -.action
-        %add-product
+        %create-product
       ?>  (~(has by stores) store-id.action)
       =/  s  `store`(~(got by stores) store-id.action)
       =/  n  (next-index catalog.s)
