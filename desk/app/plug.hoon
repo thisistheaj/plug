@@ -7,7 +7,7 @@
 +$  state-0  [%0 =stores]
 +$  card  card:agent:gall
 ++  catalog-orm  ((on id product) gth)
-++  next-index
+++  next-product-id
   |=  [c=catalog]
   ^-  @
   ::  return the increment of: the greatest (aka leftmost) index, or 0
@@ -61,7 +61,7 @@
         %create-product
       ?>  (~(has by stores) store-id.action)
       =/  s  `store`(~(got by stores) store-id.action)
-      =/  n  (next-index catalog.s)
+      =/  n  (next-product-id catalog.s)
       :-  ~
       %=  state
         stores

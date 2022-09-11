@@ -22,10 +22,6 @@
 ::+$  action
 ::  $%  [%create-store =title]
 ::      [%delete-store =id]
-::      [%add-product store-id=id =title =description =images =price store-ids=(list id)]
-::      [%update-product store-id=id product-id=id =title =description =images =price store-ids=(list id)]
-::      [%remove-product store-id=id product-id=id]
-::      [%delete-product product-id=id]
 ::  ==
 +$  action
   $%  [%create-product store-id=id =title =description =images =price]
