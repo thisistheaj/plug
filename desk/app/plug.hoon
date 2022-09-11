@@ -61,8 +61,7 @@
         %add-product
       ?>  (~(has by stores) store-id.action)
       =/  s  `store`(~(got by stores) store-id.action)
-      ::=/  n  (next-index products.state)
-      =/  n  1
+      =/  n  (next-index catalog.s)
       :-  ~
       %=  state
         stores
