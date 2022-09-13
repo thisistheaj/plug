@@ -13,6 +13,12 @@
   ::  return the increment of: the greatest (aka leftmost) index, or 0
   ::
   .+  -:(fall (pry:catalog-orm c) [id=0 ~])
+++  next-store-id
+  |=  [=stores]
+  ^-  @
+  ::  return the increment of: the greatest index, or 0
+  ::
+  .+  (roll ~(tap in ~(key by stores)) max)
 --
 %-  agent:dbug
 =|  state-0
@@ -58,6 +64,14 @@
     |=  =action
     ^-  (quip card _state)
     ?-    -.action
+        %create-store
+      =/  n  (next-store-id stores)
+      `state(stores (~(put by stores) n [id=n title=title.action catalog=~ stewards=~]))
+    ::
+        %delete-store
+      ?>  (~(has by stores) id.action)
+      `state(stores (~(del by stores) id.action))
+    ::
         %create-product
       ?>  (~(has by stores) store-id.action)
       =/  s  `store`(~(got by stores) store-id.action)

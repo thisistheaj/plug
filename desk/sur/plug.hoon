@@ -19,12 +19,10 @@
 +$  store  [=id =title =catalog =stewards]
 ::  Poke actions
 ::
-::+$  action
-::  $%  [%create-store =title]
-::      [%delete-store =id]
-::  ==
 +$  action
-  $%  [%create-product store-id=id =title =description =images =price]
+  $%  [%create-store =title]
+      [%delete-store =id]
+      [%create-product store-id=id =title =description =images =price]
       [%update-product store-id=id product-id=id =title =description =images =price]
       [%delete-product store-id=id product-id=id]
   ==
