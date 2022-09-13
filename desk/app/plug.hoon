@@ -135,7 +135,14 @@
 ::
 ++  on-watch  on-watch:def
 ++  on-leave  on-leave:def
-++  on-peek   on-peek:def
+++  on-peek
+  |=  =path
+  ^-  (unit (unit cage))
+  ?>  (~(has by stores) 1)
+  =/  s  `store`(~(got by stores) 1)
+  ?+  path  (on-peek:def path)
+    [%x %all ~]  ``plug-catalog+!>(catalog.s)
+  ==
 ++  on-agent  on-agent:def
 ++  on-arvo   on-arvo:def
 ++  on-fail   on-fail:def
