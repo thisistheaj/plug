@@ -1,0 +1,119 @@
+<html>
+  <head>
+    <script src="https://unpkg.com/@urbit/http-api"></script>
+    <script src="/session.js"></script>
+    <style type="text/css">
+      /* todo: style app */
+    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div id="app"></div>
+  </body>
+  <script>
+    function App () {
+      const agent = PlugAgent()
+      return {
+        agent,
+        d: new Date(),
+        // UI Components (View)
+        ProductsPage () {
+          return `
+          <div>
+            ${this.Header()}
+            <div class="page-content">
+              <h2>Hello world</h2>
+              <button onclick="window.app.createStore()">New Store</button>
+            </div>
+          </div>`
+        },
+        Header () {
+          return `<h1 id="header">Plug: Sell Sh*t On Urbit</h1>`
+        },
+        // Controller — Lifecycle, Presentation, Interactions
+        // Lifecycle
+        onLoad: async function () {
+          await this.agent.fetchAllProducts()
+          this.navigate('product-list')
+        },
+        // Router
+        navigate (page, params={}) {
+          let pageHTML
+          switch (page) {
+            case "product-list":
+              pageHTML = this.ProductsPage()
+              break;
+          }
+          document.getElementById("app").innerHTML = pageHTML
+        },
+        // Interactions
+        async createStore () {
+          const title = "Lili's Cool Store"
+          await this.agent.createStore(title)
+          this.navigate('product-list')
+        },
+        // async openLog () {
+        //   this.isLogOpen = true
+        //   this.navigate('product-detail', { id: this.id })
+        // },
+        // async closeLog () {
+        //   this.isLogOpen = false
+        //   this.navigate('product-detail', { id: this.id })
+        // }
+      }
+    }
+
+    // Services (Model)
+    function PlugAgent () {
+      const _mock = false
+      const api = _mock ? {} : new UrbitHttpApi.Urbit("")
+      api.ship = window.ship;
+      return {
+        _api:api,
+        _scry: async function (path) {
+          return this._api.scry({ app: "plug", path })
+        },
+        _poke: async function (name, payload) {
+          return this._api.poke({
+            app: "plug",
+            mark: "plug-action",
+            json: { [name]: payload },
+            onError: ()=> alert(`PlugAgent: ${name} action rejected`)
+          })
+        },
+        _mock,
+        stores: [],
+        catalog: [], //todo: replace with subprop on stores
+        createStore: async function (title) {
+          if (this._mock) {
+            const id = this.stores.reduce((maxId, store) => maxId > stores.id ? maxId : store.id, 0) + 1
+            this.stores.push({ id, store: {
+              id,
+              title,
+            }})
+          } else {
+            await this._poke('create-store', { title })
+            await this.fetchAllProducts()    
+          }
+        },
+        fetchAllProducts: async function () {
+          if(this._mock) {
+            this.catalog = [{ id: 1 }]
+          } else {
+            const catalog = await this._scry('/all')
+            this.catalog = catalog
+            console.log('catalog', catalog)
+          }
+        }
+      }
+    }
+
+    async function main () {
+      setTimeout(() => {
+        window.app = App()
+        app.onLoad()
+      }, 1000)
+    }
+    main()
+  </script>
+</html>

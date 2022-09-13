@@ -6,9 +6,8 @@
   ^-  action
   %.  jon
   %-  of
-  :~  [%create-store ~[title+sa]]
+  :~  [%create-store (ot ~[title+sa])]
       [%delete-store (ot ~[id+ni])]
-      ::[%foo ~[title+sa]]
       [%create-product (ot ~[store-id+ni title+sa description+sa images+(ar sa) price+ni])]
       [%update-product (ot ~[store-id+ni product-id+ni title+sa description+sa images+(ar sa) price+ni])]
       [%delete-product (ot ~[store-id+ni product-id+ni])]
