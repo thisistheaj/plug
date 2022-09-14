@@ -33,7 +33,7 @@
         // Controller — Lifecycle, Presentation, Interactions
         // Lifecycle
         onLoad: async function () {
-          await this.agent.fetchAllProducts()
+          await this.agent.refreshState()
           this.navigate('product-list')
         },
         // Router
@@ -94,45 +94,81 @@
             }})
           } else {
             await this._poke('create-store', { title })
-            await this.fetchAllProducts()    
+            await this.refreshState()    
           }
         },
         deleteStore: async function (id) {
           if (this._mock) {
           } else {
             await this._poke('delete-store', { id })
-            await this.fetchAllProducts()    
+            await this.refreshState()    
           }
         },
         createProduct: async function (storeId, { title, description, images, price }) {
           if (this._mock) {
           } else {
             await this._poke('create-product', { 'store-id': storeId, title, description, images, price })
-            await this.fetchAllProducts()    
+            await this.refreshState()    
           }
         },
         updateProduct: async function (storeId, { id, title, description, images, price }) {
           if (this._mock) {
           } else {
             await this._poke('update-product', { 'store-id': storeId, id, title, description, images, price })
-            await this.fetchAllProducts()    
+            await this.refreshState()    
           }
         },
         updateProduct: async function (storeId, productId) {
           if (this._mock) {
           } else {
             await this._poke('update-product', { 'store-id': storeId, 'product-id': productId })
-            await this.fetchAllProducts()    
+            await this.refreshState()    
           }
         },
         fetchAllProducts: async function () {
           if(this._mock) {
-            this.catalog = [{ id: 1 }]
+            this.catalog = [
+              {
+                "product": {
+                  "title": "MrCool 12k btu",
+                  "images": ["https://image.jpg"],
+                  "description": "An AC unit with 12k btu cooling power",
+                  "id": 1,
+                  "price": 69995
+                },
+                "id": 1
+              },{
+                "product": {
+                  "title": "MrCool 18k btu",
+                  "images": ["https://image.jpg"],
+                  "description": "An AC unit with 18k btu cooling power",
+                  "id": 2,
+                  "price": 79995
+                },
+                "id": 2
+              }
+            ]
           } else {
             const catalog = await this._scry('/products')
             this.catalog = catalog
             console.log(JSON.stringify(catalog))
           }
+        },
+        fetchAllStores: async function () {
+          if(this._mock) {
+            this.stores = [
+              { "store":{ "title":"Lili's Cool Store", "id":2 },"id":2},
+              { "store":{ "title":"Default Store", "id":1 }, "id":1 }
+            ]
+          } else {
+            const stores = await this._scry('/stores')
+            this.stores = stores
+            console.log(JSON.stringify(stores))
+          }
+        },
+        refreshState: async function () {
+          await this.fetchAllProducts()    
+          await this.fetchAllStores()    
         }
       }
     }
