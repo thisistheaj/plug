@@ -2,8 +2,20 @@
   <head>
     <script src="https://unpkg.com/@urbit/http-api"></script>
     <script src="/session.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@2.1.0/build/pure-min.css" integrity="sha384-yHIFVG6ClnONEA5yB5DJXfW2/KC173DIQrYoZMEtBvGzmf0PKiGyNEqe9N6BNDBH" crossorigin="anonymous">
     <style type="text/css">
-      /* todo: style app */
+      .navbar {
+        background: #666;
+      }
+      .navbar .plug-menu-link {
+        color: #fff;
+      }
+      .navbar .plug-menu-link:hover {
+        background: #444;
+      }
+      .nav-right {
+        /*text-align: right;*/
+      }
     </style>
     <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
@@ -15,33 +27,117 @@
       const agent = PlugAgent()
       return {
         agent,
-        d: new Date(),
+        currentStore: null,
         // UI Components (View)
+        Dashboard () {
+          return `
+            <div>
+              ${this.Header()}
+              <div class="page-content">
+                <h2>Hello Dashboard</h2>
+              </div>
+            </div>
+            `
+        },
         ProductsPage () {
           return `
-          <div>
-            ${this.Header()}
-            <div class="page-content">
-              <h2>Hello world</h2>
-              <button onclick="window.app.createStore()">New Store</button>
+            <div>
+              ${this.Header()}
+              <div class="page-content">
+                <h2>Hello Products</h2>
+              </div>
             </div>
-          </div>`
+            `
+        },
+        OrdersPage () {
+          return `
+            <div>
+              ${this.Header()}
+              <div class="page-content">
+                <h2>Hello Orders</h2>
+              </div>
+            </div>
+          `
+        },
+        StorePage () {
+          return `
+            <div>
+              ${this.Header()}
+              <div class="page-content">
+                <h2>Hello Store</h2>
+                <button onclick="window.app.createStore()">New Store</button>
+              </div>
+            </div>
+          `
         },
         Header () {
-          return `<h1 id="header">Plug: Sell Sh*t On Urbit</h1>`
+          return `
+            <div class="pure-g">
+              <div class="pure-u-2-3">
+                <div class="navbar nav-left pure-menu pure-menu-horizontal">
+                  <a href="#" onclick="window.app.navigate('dashboard')" class="pure-menu-heading pure-menu-link plug-menu-link">Plug</a>
+                  <ul class="pure-menu-list">
+                    <li class="pure-menu-item">
+                      <a href="#" onclick="window.app.navigate('products')" class="pure-menu-link plug-menu-link">Products</a>
+                    </li>
+                    <li class="pure-menu-item">
+                      <a href="#" onclick="window.app.navigate('orders')" class="pure-menu-link plug-menu-link">Orders</a>
+                    </li>
+                    <li class="pure-menu-item">
+                      <a href="#" onclick="window.app.navigate('store')" class="pure-menu-link plug-menu-link">Store</a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              <div class="pure-u-1-3">
+                ${this.StoresDropDown()}
+              </div>
+            </div>
+          `
+        },
+        StoresDropDown () {
+          return `
+            <div class="navbar nav-right pure-menu pure-menu-horizontal">
+              <ul class="pure-menu-list">
+                <li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
+                  <a href="#" class="pure-menu-link plug-menu-link">${this.currentStore.store.title}</a>
+                  <ul class="pure-menu-children">
+                    ${this.agent.stores.reduce((html, store) => html += this.StoreDropDownOption(store), '')}
+                  </ul>
+                </li>
+              </ul>
+            </div>
+          `
+        },
+        StoreDropDownOption (store) {
+          return `
+            <li class="pure-menu-item">
+              <a onclick="window.app.changeStore(${store.store.id})"href="#" class="pure-menu-link">${store.store.title}</a>
+            </li>
+          `
         },
         // Controller — Lifecycle, Presentation, Interactions
         // Lifecycle
         onLoad: async function () {
           await this.agent.refreshState()
-          this.navigate('product-list')
+          this.currentStore = this.agent.stores[0]
+          this.navigate('dashboard')
         },
         // Router
         navigate (page, params={}) {
           let pageHTML
           switch (page) {
-            case "product-list":
+            case "dashboard":
+              pageHTML = this.Dashboard()
+              break;
+            case "products":
               pageHTML = this.ProductsPage()
+              break;
+            case "orders":
+              pageHTML = this.OrdersPage()
+              break;
+            case "store":
+              pageHTML = this.StorePage()
               break;
           }
           document.getElementById("app").innerHTML = pageHTML
@@ -50,8 +146,13 @@
         async createStore () {
           const title = "Lili's Cool Store"
           await this.agent.createStore(title)
-          this.navigate('product-list')
+          this.navigate('dashboard')
         },
+        changeStore (id) {
+          store = this.agent.stores.filter(s => s.id == id)[0]
+          this.currentStore = store
+          this.navigate('dashboard')
+        }
         // async openLog () {
         //   this.isLogOpen = true
         //   this.navigate('product-detail', { id: this.id })
@@ -65,7 +166,7 @@
 
     // Services (Model)
     function PlugAgent () {
-      const _mock = false
+      const _mock = true
       const api = _mock ? {} : new UrbitHttpApi.Urbit("")
       api.ship = window.ship;
       return {
@@ -84,10 +185,9 @@
         _mock,
         stores: [],
         catalog: [], //todo: replace with subprop on stores
-        currentStore: null,
         createStore: async function (title) {
           if (this._mock) {
-            const id = this.stores.reduce((maxId, store) => maxId > stores.id ? maxId : store.id, 0) + 1
+            const id = this.stores.reduce((maxId, store) => maxId > store.id ? maxId : store.id, 0) + 1
             this.stores.push({ id, store: {
               id,
               title,
@@ -151,20 +251,20 @@
           } else {
             const catalog = await this._scry('/products')
             this.catalog = catalog
-            console.log(JSON.stringify(catalog))
           }
+          console.log(JSON.stringify(this.catalog))
         },
         fetchAllStores: async function () {
           if(this._mock) {
             this.stores = [
-              { "store":{ "title":"Lili's Cool Store", "id":2 },"id":2},
-              { "store":{ "title":"Default Store", "id":1 }, "id":1 }
+              { "store":{ "title":"Lili's Cool Store", "id": 2 },"id": 2},
+              { "store":{ "title":"Default Store", "id": 1 }, "id": 1 }
             ]
           } else {
             const stores = await this._scry('/stores')
             this.stores = stores
-            console.log(JSON.stringify(stores))
           }
+          console.log(JSON.stringify(this.stores))
         },
         refreshState: async function () {
           await this.fetchAllProducts()    
