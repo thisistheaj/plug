@@ -8,7 +8,7 @@
 ++  grow
   |%
   ++  noun  cat
-  ++  json  (state-to-json cat)
+  ++  json  (enc-catalog cat)
   --
 ++  grad  %noun
 --

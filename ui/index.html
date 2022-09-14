@@ -84,6 +84,7 @@
         _mock,
         stores: [],
         catalog: [], //todo: replace with subprop on stores
+        currentStore: null,
         createStore: async function (title) {
           if (this._mock) {
             const id = this.stores.reduce((maxId, store) => maxId > stores.id ? maxId : store.id, 0) + 1
@@ -96,13 +97,41 @@
             await this.fetchAllProducts()    
           }
         },
+        deleteStore: async function (id) {
+          if (this._mock) {
+          } else {
+            await this._poke('delete-store', { id })
+            await this.fetchAllProducts()    
+          }
+        },
+        createProduct: async function (storeId, { title, description, images, price }) {
+          if (this._mock) {
+          } else {
+            await this._poke('create-product', { 'store-id': storeId, title, description, images, price })
+            await this.fetchAllProducts()    
+          }
+        },
+        updateProduct: async function (storeId, { id, title, description, images, price }) {
+          if (this._mock) {
+          } else {
+            await this._poke('update-product', { 'store-id': storeId, id, title, description, images, price })
+            await this.fetchAllProducts()    
+          }
+        },
+        updateProduct: async function (storeId, productId) {
+          if (this._mock) {
+          } else {
+            await this._poke('update-product', { 'store-id': storeId, 'product-id': productId })
+            await this.fetchAllProducts()    
+          }
+        },
         fetchAllProducts: async function () {
           if(this._mock) {
             this.catalog = [{ id: 1 }]
           } else {
-            const catalog = await this._scry('/all')
+            const catalog = await this._scry('/products')
             this.catalog = catalog
-            console.log('catalog', catalog)
+            console.log(JSON.stringify(catalog))
           }
         }
       }

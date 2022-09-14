@@ -138,10 +138,15 @@
 ++  on-peek
   |=  =path
   ^-  (unit (unit cage))
-  ?>  (~(has by stores) 1)
-  =/  s  `store`(~(got by stores) 1)
-  ?+  path  (on-peek:def path)
-    [%x %all ~]  ``plug-catalog+!>(catalog.s)
+  ?+    path  (on-peek:def path)
+      [%x %stores ~]
+    ``plug-stores+!>(stores)
+  ::
+      [%x %products ~]
+    ?>  (~(has by stores) 1)
+    =/  s  `store`(~(got by stores) 1)
+    ``plug-catalog+!>(catalog.s)
+  ::
   ==
 ++  on-agent  on-agent:def
 ++  on-arvo   on-arvo:def

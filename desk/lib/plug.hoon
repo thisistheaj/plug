@@ -12,13 +12,36 @@
       [%update-product (ot ~[store-id+ni product-id+ni title+sa description+sa images+(ar sa) price+ni])]
       [%delete-product (ot ~[store-id+ni product-id+ni])]
   ==
-++  state-to-json
+::  encodes: stores, tuples, store
+::
+++  enc-stores
+  |=  =stores
+  ^-  json
+  a+(turn ~(tap by stores) enc-store-tuple)
+++  enc-store-tuple
+  =,  enjs:format
+  |=  t=[=id =store]
+  ^=  json
+  %-  pairs
+  :~  ['id' (numb id.t)]
+      ['store' (enc-store store.t)]
+  ==
+++  enc-store
+  =,  enjs:format
+  |=  s=store
+  %-  pairs
+  :~  ['id' (numb id.s)]
+      ['title' (tape title.s)]
+  ==
+::  encodes: catalog, tuples, product
+::
+++  enc-catalog
   |=  c=catalog
   ^-  json
   a+(turn ~(tap by c) enc-product-tuple)
 ++  enc-product-tuple
   =,  enjs:format
-  |=  t=[id=id product=product]
+  |=  t=[=id =product]
   ^=  json
   %-  pairs
   :~  ['id' (numb id.t)]
