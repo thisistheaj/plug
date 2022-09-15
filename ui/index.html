@@ -19,6 +19,16 @@
       .pad-bottom {
         margin: 0 0 12px 0;
       }
+      /* image input */
+      .plug-image-input {
+        position: relative;
+        width: 150px;
+      }
+      .plug-image-input-button {
+        position: absolute;
+        right: 8px;
+        bottom: 8px;
+      }
     </style>
     <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
@@ -168,7 +178,7 @@
             <tr>
               <td><input type="checkbox" value="" /></td>
               <td>${product.id}</td>
-              <td><img width=50px src="${product.images[0]}"></img></td>
+              <td><img width="50px" src="${product.images[0]}"></img></td>
               <td>${product.title}</td>
               <td>${this.price(product.price)} </td>
               <td>
@@ -190,9 +200,7 @@
                 </div>
                 <label>Images</label>
                 <div id="product-images">
-                  ${product.images ? product.images.reduce((html, image) => html + `
-                    <img src="${image}"></img>
-                  `, ''): ''}
+                  ${product.images ? product.images.reduce((html, image) => html + this.ImageInput(image), ''): ''}
                 </div>
                 <div class="pure-control-group">
                   <label for="product-image-url">Image Link</label>
@@ -212,6 +220,14 @@
                 ${button}
               </fieldset>
             </form>
+          `
+        },
+        ImageInput (image) {
+          return `
+            <div class="plug-image-input">
+              <img class="plug-image-input-image" width="150px" src="${image}"></img>
+              <button class="plug-image-input-button" type="button" onclick="window.app.removeImageInput(this)">Remove</button>
+            </div>
           `
         },
         CreateProductButton () {
@@ -306,9 +322,10 @@
         addImage () {
           const url = document.getElementById("product-image-url").value
           const list = document.getElementById("product-images")
-          list.innerHTML = list.innerHTML + `
-            <img src="${url}"></img>
-          `
+          list.innerHTML = list.innerHTML + this.ImageInput(url)
+        },
+        removeImageInput (el) {
+          el.parentElement.remove();
         },
         // async openLog () {
         //   this.isLogOpen = true
@@ -439,7 +456,7 @@
               },{
                 "product": {
                   "title": "MrCool 18k btu",
-                  "images": ["https://random.imagecdn.app/150/150"],
+                  "images": ["https://random.imagecdn.app/150/151"],
                   "description": "An AC unit with 18k btu cooling power",
                   "id": 2,
                   "price": 79995
