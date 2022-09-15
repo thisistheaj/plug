@@ -184,6 +184,19 @@
                   <label for="product-title">Title</label>
                   <input ${product.title ? `value="${product.title}"` : ''} type="text" id="product-title" placeholder="My Cool Widget" />
                 </div>
+                <label>Images</label>
+                <div id="product-images">
+                  ${product.images ? product.images.reduce((html, image) => html + `
+                    <img src="${image}"></img>
+                  `, ''): ''}
+                </div>
+                <div class="pure-control-group">
+                  <label for="product-image-url">Image Link</label>
+                  <input type="text" id="product-image-url" placeholder="https://mysite.com/someimage.jpg" />
+                </div>
+                <button type="button" onclick="window.app.addImage()" class="pure-button">
+                  Add Image
+                </button>
                 <div class="pure-control-group">
                   <label for="product-description">Description</label>
                   <textarea id="product-description" placeholder="Write about all it's cool features here">${product.description ? product.description : ''}</textarea>
@@ -270,6 +283,13 @@
           this.currentStore = store
           this.navigate('dashboard')
         },
+        addImage () {
+          const url = document.getElementById("product-image-url").value
+          const list = document.getElementById("product-images")
+          list.innerHTML = list.innerHTML + `
+            <img src="${url}"></img>
+          `
+        },
         // async openLog () {
         //   this.isLogOpen = true
         //   this.navigate('product-detail', { id: this.id })
@@ -298,6 +318,7 @@
             .replaceAll('$', '')
           )
           const images = []
+          document.querySelectorAll('#product-images img').forEach(el => images.push(el.src))
           if (!title) {
             alert('Invalid Title')
             return
