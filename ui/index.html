@@ -119,6 +119,13 @@
             </div>
           `
         },
+        CreateStorePage () {
+          return `
+            <div>
+              ${this.PageContent(this.StoreForm('Create A New Store', this.CreateStoreButton(), store={},  deleteButton=false))}
+            </div>
+          `
+        },
         // header Components
         Header () {
           return `
@@ -134,7 +141,7 @@
                       <a href="#" onclick="window.app.navigate('orders')" class="pure-menu-link plug-menu-link">Orders</a>
                     </li>
                     <li class="pure-menu-item">
-                      <a href="#" onclick="window.app.navigate('store')" class="pure-menu-link plug-menu-link">Store</a>
+                      <a href="#" onclick="window.app.navigate('store-settings')" class="pure-menu-link plug-menu-link">Store</a>
                     </li>
                   </ul>
                 </div>
@@ -153,6 +160,9 @@
                   <a href="#" class="pure-menu-link plug-menu-link">${this.currentStore.store.title}</a>
                   <ul class="pure-menu-children">
                     ${this.agent.stores.reduce((html, store) => html += this.StoreDropDownOption(store), '')}
+                    <li class="pure-menu-item">
+                      <a onclick="window.app.navigate('create-store')"href="#" class="pure-menu-link">+ Create Store</a>
+                    </li>
                   </ul>
                 </li>
               </ul>
@@ -309,6 +319,13 @@
             </button>
           `
         },
+        CreateStoreButton () {
+          return `
+            <button class="pure-button pure-button-primary" onclick="window.app.createStore()">
+              Create Store
+            </button>
+          `
+        },
         // Orders Components
         OrdersTable () {
           return `
@@ -331,9 +348,13 @@
         // Lifecycle
         onLoad: async function () {
           await this.agent.fetchAllStores()
-          this.currentStore = this.agent.stores[0]
-          await this.agent.fetchAllProducts(this.currentStore.id)
-          this.navigate('dashboard')
+          if (this.agent.stores.length < 1) {
+            this.navigate('create-store')
+          } else {
+            this.currentStore = this.agent.stores[0]
+            await this.agent.fetchAllProducts(this.currentStore.id)
+            this.navigate('dashboard')
+          }
         },
         // Router
         navigate (page, params={}) {
@@ -354,8 +375,12 @@
             case "orders":
               pageHTML = this.OrdersPage()
               break;
-            case "store":
+            case "store-settings":
               pageHTML = this.StoreSettingsPage()
+              break;
+            case "create-store":
+              console.log('page oin')
+              pageHTML = this.CreateStorePage()
               break;
           }
           document.getElementById("app").innerHTML = pageHTML
@@ -364,8 +389,10 @@
         // Interactions
         // 
         async createStore () {
-          const title = "Lili's Cool Store"
+          const title = document.getElementById('store-title').value
           await this.agent.createStore(title)
+          this.currentStore = this.agent.stores.filter(store => store.store.title == title)[0]
+          this.changeStore(this.currentStore.id)
           this.navigate('dashboard')
         },
         async saveStore () {
@@ -472,7 +499,7 @@
 
     // Services (Model)
     function PlugAgent () {
-      const _mock = false
+      const _mock = true
       const api = _mock ? {} : new UrbitHttpApi.Urbit("")
       api.ship = window.ship;
       return {
@@ -584,8 +611,8 @@
         fetchAllStores: async function () {
           if(this._mock) {
             this.stores = [
-              { "store":{ "title":"Lili's Cool Store", "id": 2 },"id": 2},
-              { "store":{ "title":"Default Store", "id": 1 }, "id": 1 }
+              // { "store":{ "title":"Lili's Cool Store", "id": 2 },"id": 2},
+              // { "store":{ "title":"Default Store", "id": 1 }, "id": 1 }
             ]
           } else {
             const stores = await this._scry('/stores')
