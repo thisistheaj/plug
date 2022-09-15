@@ -68,6 +68,11 @@
       =/  n  (next-store-id stores)
       `state(stores (~(put by stores) n [id=n title=title.action catalog=~ stewards=~]))
     ::
+        %update-store
+      ?>  (~(has by stores) id.action)
+      =/  s  `store`(~(got by stores) id.action)
+      `state(stores (~(put by stores) id.action [id=id.action title=title.action catalog=catalog.s stewards=stewards.s]))
+    ::
         %delete-store
       ?>  (~(has by stores) id.action)
       `state(stores (~(del by stores) id.action))

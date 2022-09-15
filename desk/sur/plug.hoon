@@ -21,6 +21,7 @@
 ::
 +$  action
   $%  [%create-store =title]
+      [%update-store =id =title]
       [%delete-store =id]
       [%create-product store-id=id =title =description =images =price]
       [%update-product store-id=id product-id=id =title =description =images =price]
