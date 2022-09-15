@@ -37,9 +37,13 @@
           return `
             <div>
               ${this.Header()}
-              <div class="page-content">
-                <h2>Hello Dashboard</h2>
-              </div>
+              ${this.PageContent(`
+                <div class="page-content">
+                  <h2>Welcome to Plug</h2>
+                  ${this.ProductTable()}
+                  ${this.OrdersTable()}
+                </div>
+              `)}
             </div>
             `
         },
@@ -71,9 +75,7 @@
           return `
             <div>
               ${this.Header()}
-              <div class="page-content">
-                <h2>Hello Orders</h2>
-              </div>
+              ${this.PageContent(this.OrdersTable())}
             </div>
           `
         },
@@ -81,10 +83,12 @@
           return `
             <div>
               ${this.Header()}
-              <div class="page-content">
-                <h2>Hello Store</h2>
-                <button onclick="window.app.createStore()">New Store</button>
-              </div>
+              ${this.PageContent(`
+                <div class="page-content">
+                  <h2>Hello Store</h2>
+                  <button onclick="window.app.createStore()">New Store</button>
+                </div>
+              `)}
             </div>
           `
         },
@@ -169,7 +173,7 @@
               <td>${this.price(product.price)} </td>
               <td>
                 <button onclick="window.app.navigate('product', { 'product': ${this.pass(product)}})" class="pure-button">✏️</button>
-                <button class="pure-button">❌</button>
+                <button class="pure-button" onclick="window.app.deleteProduct(${product.id})">❌</button>
               </td>
             </tr>
           `
@@ -219,6 +223,14 @@
           return `
             <button type="button" onclick="window.app.updateProduct(${id})" class="pure-button pure-button-primary">Save</button>
           `
+        },
+        // Orders Components
+        OrdersTable () {
+          return `
+          <div>
+            <h2>Orders</h2>
+            <h4>Coming Soon!</h4>
+          </div>          `
         },
         // Generic Components
         PageContent (content) {
@@ -276,6 +288,10 @@
         async updateProduct (id) {
           const { title, description, price, images } = this.validateProduct()
           await this.agent.updateProduct(this.currentStore.id, { id, title, description, images, price})
+          this.navigate('products')
+        },
+        async deleteProduct (id) {
+          await this.agent.deleteProduct(this.currentStore.id, id)
           this.navigate('products')
         },
         changeStore (id) {
@@ -396,6 +412,7 @@
         },
         deleteProduct: async function (storeId, productId) {
           if (this._mock) {
+            this.catalog = this.catalog.filter(item => item.id != productId)
           } else {
             await this._poke('update-product', { 'store-id': storeId, 'product-id': productId })
             await this.refreshState()    
