@@ -172,8 +172,8 @@
               <td>${product.title}</td>
               <td>${this.price(product.price)} </td>
               <td>
-                <button onclick="window.app.navigate('product', { 'product': ${this.pass(product)}})" class="pure-button">✏️</button>
-                <button class="pure-button" onclick="window.app.deleteProduct(${product.id})">❌</button>
+                <button onclick="window.app.navigate('product', { 'product': ${this.pass(product)}})" class="pure-button">Edit</button>
+                <button class="pure-button" onclick="window.app.deleteProduct(${product.id})">Delete</button>
               </td>
             </tr>
           `
@@ -354,7 +354,7 @@
 
     // Services (Model)
     function PlugAgent () {
-      const _mock = true
+      const _mock = false
       const api = _mock ? {} : new UrbitHttpApi.Urbit("")
       api.ship = window.ship;
       return {
@@ -414,7 +414,7 @@
           if (this._mock) {
             this.catalog = this.catalog.filter(item => item.id != productId)
           } else {
-            await this._poke('update-product', { 'store-id': storeId, 'product-id': productId })
+            await this._poke('delete-product', { 'store-id': storeId, 'product-id': productId })
             await this.refreshState()    
           }
         },
