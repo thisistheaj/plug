@@ -379,7 +379,6 @@
               pageHTML = this.StoreSettingsPage()
               break;
             case "create-store":
-              console.log('page oin')
               pageHTML = this.CreateStorePage()
               break;
           }
@@ -412,8 +411,6 @@
         },
         async updateProduct (id) {
           const { title, description, price, images } = this.validateProduct()
-          console.log(this.currentStore.id)
-          console.log({ id, title, description, images, price})
           await this.agent.updateProduct(this.currentStore.id, { id, title, description, images, price})
           this.navigate('products')
         },
@@ -499,7 +496,7 @@
 
     // Services (Model)
     function PlugAgent () {
-      const _mock = true
+      const _mock = false
       const api = _mock ? {} : new UrbitHttpApi.Urbit("")
       api.ship = window.ship;
       return {
@@ -528,7 +525,11 @@
             }})
           } else {
             await this._poke('create-store', { title })
-            await this.refreshState()    
+            if (this.stores.length < 1) {
+              await this.fetchAllStores()
+              this.lastStoreId = this.stores[0].id
+            }
+            await this.refreshState()
           }
         },
         updateStore: async function (id, title) {
@@ -611,8 +612,8 @@
         fetchAllStores: async function () {
           if(this._mock) {
             this.stores = [
-              { "store":{ "title":"Lili's Cool Store", "id": 2 },"id": 2},
-              { "store":{ "title":"Default Store", "id": 1 }, "id": 1 }
+              { "store":{ "title":"Default Store", "id": 1 }, "id": 1 },
+              { "store":{ "title":"My Side Hsutle", "id": 2 },"id": 2},
             ]
           } else {
             const stores = await this._scry('/stores')
