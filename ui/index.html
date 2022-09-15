@@ -106,7 +106,7 @@
             </div>
           `
         },
-        StorePage () {
+        StoreSettingsPage () {
           return `
             <div>
               ${this.Header()}
@@ -355,7 +355,7 @@
               pageHTML = this.OrdersPage()
               break;
             case "store":
-              pageHTML = this.StorePage()
+              pageHTML = this.StoreSettingsPage()
               break;
           }
           document.getElementById("app").innerHTML = pageHTML
