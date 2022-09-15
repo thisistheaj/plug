@@ -142,9 +142,10 @@
       [%x %stores ~]
     ``plug-stores+!>(stores)
   ::
-      [%x %products ~]
-    ?>  (~(has by stores) 1)
-    =/  s  `store`(~(got by stores) 1)
+      [%x %stores @ %products %all ~]
+    =/  id=@ud  (rash i.t.t.path dem)
+    ?>  (~(has by stores) id)
+    =/  s  `store`(~(got by stores) id)
     ``plug-catalog+!>(catalog.s)
   ::
   ==

@@ -186,7 +186,7 @@
                 <legend>${title}</legend>
                 <div class="pure-control-group">
                   <label for="product-title">Title</label>
-                  <input ${product.title ? `value="${product.title}"` : ''} type="text" id="product-title" placeholder="My Cool Widget" />
+                  <input ${product.title ? `value="${product.title}"` : ''} autofocus type="text" id="product-title" placeholder="My Cool Widget" />
                 </div>
                 <label>Images</label>
                 <div id="product-images">
@@ -245,8 +245,9 @@
         // Controller — Lifecycle, Presentation, Interactions
         // Lifecycle
         onLoad: async function () {
-          await this.agent.refreshState()
+          await this.agent.fetchAllStores()
           this.currentStore = this.agent.stores[0]
+          await this.agent.fetchAllProducts(this.currentStore.id)
           this.navigate('products')
         },
         // Router
@@ -294,9 +295,10 @@
           await this.agent.deleteProduct(this.currentStore.id, id)
           this.navigate('products')
         },
-        changeStore (id) {
+        async changeStore (id) {
           store = this.agent.stores.filter(s => s.id == id)[0]
           this.currentStore = store
+          await this.agent.fetchAllProducts(this.currentStore.id)
           this.navigate('dashboard')
         },
         addImage () {
@@ -373,6 +375,7 @@
         _mock,
         stores: [],
         catalog: [], //todo: replace with subprop on stores
+        lastStoreId: null,
         createStore: async function (title) {
           if (this._mock) {
             const id = this.stores.reduce((maxId, store) => maxId > store.id ? maxId : store.id, 0) + 1
@@ -418,7 +421,8 @@
             await this.refreshState()    
           }
         },
-        fetchAllProducts: async function () {
+        fetchAllProducts: async function (storeId) {
+          this.lastStoreId = storeId
           if(this._mock) {
             this.catalog = [
               {
@@ -442,7 +446,7 @@
               }
             ]
           } else {
-            const catalog = await this._scry('/products')
+            const catalog = await this._scry(`/stores/${storeId}/products/all`)
             this.catalog = catalog
           }
           console.log(JSON.stringify(this.catalog))
