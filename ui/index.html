@@ -162,7 +162,7 @@
               <table class="pure-table pure-table-bordered">
                 <thead>
                   <tr>
-                      <th><button class="pure-button">&#9776;</button></th>
+                      <th>${this.ProductTableDropDown()}</th>
                       <th>ID</th>
                       <th>Image</th>
                       <th>Name</th>
@@ -190,6 +190,30 @@
                 <button class="pure-button" onclick="window.app.deleteProduct(${product.id})">Delete</button>
               </td>
             </tr>
+          `
+        },
+        ProductTableDropDown () {
+          return `
+            <div class="pure-menu pure-menu-vertical">
+              <ul class="pure-menu-list">
+                <li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
+                  <a href="#" class="pure-menu-link plug-menu-link">&#9776;</a>
+                  <ul class="pure-menu-children">
+                    <li class="pure-menu-item">
+                      <a onclick="window.app.selectAll()" href="#" class="pure-menu-link">
+                        Select All
+                      </a>
+                      <a onclick="window.app.deselectAll()" href="#" class="pure-menu-link">
+                        Deselect All
+                      </a>
+                      <a onclick="window.app.removeCheckedProducts()" href="#" class="pure-menu-link">
+                        Delete Selected
+                      </a>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </div>
           `
         },
         // Create/Edit Product Components
@@ -295,7 +319,9 @@
           }
           document.getElementById("app").innerHTML = pageHTML
         },
+        // 
         // Interactions
+        // 
         async createStore () {
           const title = "Lili's Cool Store"
           await this.agent.createStore(title)
@@ -323,6 +349,7 @@
           await this.agent.fetchAllProducts(this.currentStore.id)
           this.navigate('dashboard')
         },
+        // image input interactions
         addImage () {
           const url = document.getElementById("product-image-url").value
           const list = document.getElementById("product-images")
@@ -330,6 +357,21 @@
         },
         removeImageInput (el) {
           el.parentElement.remove();
+        },
+        // table dropdown interactions
+        selectAll() {
+          document.querySelectorAll('input[type="checkbox"]').forEach(el => el.checked = true)
+        },
+        deselectAll() {
+          document.querySelectorAll('input[type="checkbox"]').forEach(el => el.checked = false)
+        },
+        removeCheckedProducts () {
+          document.querySelectorAll('input[type="checkbox"]').forEach(el => {
+            if (el.checked) {
+              const productId = el.parentElement.nextElementSibling.innerHTML
+              this.deleteProduct(productId)
+            }
+          })
         },
         // async openLog () {
         //   this.isLogOpen = true
