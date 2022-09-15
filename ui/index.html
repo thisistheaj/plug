@@ -611,8 +611,8 @@
         fetchAllStores: async function () {
           if(this._mock) {
             this.stores = [
-              // { "store":{ "title":"Lili's Cool Store", "id": 2 },"id": 2},
-              // { "store":{ "title":"Default Store", "id": 1 }, "id": 1 }
+              { "store":{ "title":"Lili's Cool Store", "id": 2 },"id": 2},
+              { "store":{ "title":"Default Store", "id": 1 }, "id": 1 }
             ]
           } else {
             const stores = await this._scry('/stores')
