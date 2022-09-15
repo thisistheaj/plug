@@ -308,9 +308,10 @@
         },
         DeleteStoreButton () {
           return `
-<button class="pure-button button-danger" onclick="window.app.deleteStore()">
-                    Delete Store
-                  </button>          `
+            <button class="pure-button button-danger" onclick="window.app.deleteStore()">
+              Delete Store
+            </button>
+          `
         },
         SaveStoreButton () {
           return `
@@ -551,6 +552,9 @@
             this.stores = this.stores.filter(store => store.id != id)
           } else {
             await this._poke('delete-store', { id })
+            await this.fetchAllStores()
+            this.lastStoreId = this.stores[0].id
+            await this.refreshState()
           }
         },
         createProduct: async function (storeId, { title, description, images, price }) {
