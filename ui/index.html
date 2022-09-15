@@ -16,6 +16,9 @@
       .nav-right {
         /*text-align: right;*/
       }
+      .pad-bottom {
+        margin: 0 0 12px 0;
+      }
     </style>
     <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
@@ -45,6 +48,22 @@
             <div>
               ${this.Header()}
               ${this.PageContent(this.ProductTable())}
+            </div>
+            `
+        },
+        EditProductPage (product) {
+          return `
+            <div>
+              ${this.Header()}
+              ${this.PageContent(this.ProductForm(product, 'Edit Product', this.SaveProductButton(product.id)))}
+            </div>
+            `
+        },
+        CreateProductPage () {
+          return `
+            <div>
+              ${this.Header()}
+              ${this.PageContent(this.ProductForm({}, 'Create Product', this.CreateProductButton()))}
             </div>
             `
         },
@@ -116,21 +135,21 @@
             </li>
           `
         },
-        // Product Page Components
+        // Product List Page Components
         ProductTable () {
           return `
             <div><h2>Products</h2></div>
+            <button class="pure-button pad-bottom" onclick="window.app.navigate('create-product')">Add New</button>
             <div>
               <table class="pure-table pure-table-bordered">
                 <thead>
                   <tr>
-                      <th><button class="pure-button">O</button></th>
+                      <th><button class="pure-button">&#9776;</button></th>
                       <th>ID</th>
                       <th>Image</th>
                       <th>Name</th>
-                      <th>Title</th>
-                      <th>Edit</th>
-                      <th>Delete</th>
+                      <th>Price</th>
+                      <th>Manage</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -147,10 +166,45 @@
               <td>${product.id}</td>
               <td><img width=50px src="${product.images[0]}"></img></td>
               <td>${product.title}</td>
-              <td>${product.price}</td>
-              <td><button class="pure-button">Edit</button></td>
-              <td><button class="pure-button">Delete</button></td>
+              <td>${this.price(product.price)} </td>
+              <td>
+                <button onclick="window.app.navigate('product', { 'product': ${this.pass(product)}})" class="pure-button">✏️</button>
+                <button class="pure-button">❌</button>
+              </td>
             </tr>
+          `
+        },
+        // Create/Edit Product Components
+        ProductForm (product={}, title, button) {
+          return `
+            <form class="pure-form pure-form-stacked">
+              <fieldset>
+                <legend>${title}</legend>
+                <div class="pure-control-group">
+                  <label for="product-title">Title</label>
+                  <input ${product.title ? `value="${product.title}"` : ''} type="text" id="product-title" placeholder="My Cool Widget" />
+                </div>
+                <div class="pure-control-group">
+                  <label for="product-description">Description</label>
+                  <textarea id="product-description" placeholder="Write about all it's cool features here">${product.description ? product.description : ''}</textarea>
+                </div>
+                <div class="pure-control-group">
+                  <label for="product-price">Price</label>
+                  <input ${product.price ? `value="${product.price}"` : ''} type="text" id="product-price" placeholder="$99.99" />
+                </div>
+                ${button}
+              </fieldset>
+            </form>
+          `
+        },
+        CreateProductButton () {
+          return `
+            <button type="button" onclick="window.app.createProduct()" class="pure-button pure-button-primary">Create</button>
+          `
+        },
+        SaveProductButton (id) {
+          return `
+            <button type="button" onclick="window.app.updateProduct(${id})" class="pure-button pure-button-primary">Save</button>
           `
         },
         // Generic Components
@@ -180,6 +234,12 @@
             case "products":
               pageHTML = this.ProductsPage()
               break;
+            case "create-product":
+              pageHTML = this.CreateProductPage()
+              break;
+            case "product":
+              pageHTML = this.EditProductPage(params.product)
+              break;
             case "orders":
               pageHTML = this.OrdersPage()
               break;
@@ -195,11 +255,21 @@
           await this.agent.createStore(title)
           this.navigate('dashboard')
         },
+        async createProduct () {
+          const { title, description, price, images } = this.validateProduct()
+          await this.agent.createProduct(this.currentStore.id, { title, description, images, price})
+          this.navigate('products')
+        },
+        async updateProduct (id) {
+          const { title, description, price, images } = this.validateProduct()
+          await this.agent.updateProduct(this.currentStore.id, { id, title, description, images, price})
+          this.navigate('products')
+        },
         changeStore (id) {
           store = this.agent.stores.filter(s => s.id == id)[0]
           this.currentStore = store
           this.navigate('dashboard')
-        }
+        },
         // async openLog () {
         //   this.isLogOpen = true
         //   this.navigate('product-detail', { id: this.id })
@@ -208,6 +278,40 @@
         //   this.isLogOpen = false
         //   this.navigate('product-detail', { id: this.id })
         // }
+        // UI Utils
+        price (cents) {
+          const ones = cents % 10
+          return ones > 0 ? '$' + (cents/100) : '$' + (cents/100) + '0'
+        },
+        pass (item) {
+          return JSON
+            .stringify(item)
+            .replaceAll(`"`,`'`)
+        },
+        validateProduct () {
+          const title = document.getElementById("product-title").value
+          const description = document.getElementById("product-description").value
+          const price = Number(
+            document.getElementById("product-price").value
+            .replaceAll(',', '')
+            .replaceAll('.', '')
+            .replaceAll('$', '')
+          )
+          const images = []
+          if (!title) {
+            alert('Invalid Title')
+            return
+          }
+          if (!description) {
+            alert('Invalid Description')
+            return
+          }
+          if (!price) {
+            alert('Invalid Price')
+            return
+          }
+          return { title, description, price, images }
+        }
       }
     }
 
@@ -253,6 +357,8 @@
         },
         createProduct: async function (storeId, { title, description, images, price }) {
           if (this._mock) {
+            const id = this.catalog.reduce((maxId, store) => maxId > store.id ? maxId : store.id, 0) + 1
+            this.catalog.push({ id, product: { id, title, description, images, price }})
           } else {
             await this._poke('create-product', { 'store-id': storeId, title, description, images, price })
             await this.refreshState()    
@@ -260,12 +366,14 @@
         },
         updateProduct: async function (storeId, { id, title, description, images, price }) {
           if (this._mock) {
+            this.catalog = this.catalog.filter(item => item.id != id)
+            this.catalog.push({ id, product: { id, title, description, images, price }})
           } else {
             await this._poke('update-product', { 'store-id': storeId, id, title, description, images, price })
             await this.refreshState()    
           }
         },
-        updateProduct: async function (storeId, productId) {
+        deleteProduct: async function (storeId, productId) {
           if (this._mock) {
           } else {
             await this._poke('update-product', { 'store-id': storeId, 'product-id': productId })
@@ -281,7 +389,7 @@
                   "images": ["https://random.imagecdn.app/150/150"],
                   "description": "An AC unit with 12k btu cooling power",
                   "id": 1,
-                  "price": 69995
+                  "price": 69990
                 },
                 "id": 1
               },{
