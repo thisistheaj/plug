@@ -472,7 +472,7 @@
 
     // Services (Model)
     function PlugAgent () {
-      const _mock = true
+      const _mock = false
       const api = _mock ? {} : new UrbitHttpApi.Urbit("")
       api.ship = window.ship;
       return {
@@ -523,7 +523,6 @@
             this.stores = this.stores.filter(store => store.id != id)
           } else {
             await this._poke('delete-store', { id })
-            await this.refreshState()    
           }
         },
         createProduct: async function (storeId, { title, description, images, price }) {

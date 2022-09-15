@@ -7,6 +7,7 @@
   %.  jon
   %-  of
   :~  [%create-store (ot ~[title+sa])]
+      [%update-store (ot ~[id+ni title+sa])]
       [%delete-store (ot ~[id+ni])]
       [%create-product (ot ~[store-id+ni title+sa description+sa images+(ar sa) price+ni])]
       [%update-product (ot ~[store-id+ni product-id+ni title+sa description+sa images+(ar sa) price+ni])]
