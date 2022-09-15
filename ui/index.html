@@ -29,6 +29,10 @@
         right: 8px;
         bottom: 8px;
       }
+      /* Product Table Styles */
+      .checkbox-field {
+        text-align: center;
+      }
     </style>
     <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
@@ -176,7 +180,7 @@
         ProductRow (product) {
           return `
             <tr>
-              <td><input type="checkbox" value="" /></td>
+              <td class="checkbox-field"><input type="checkbox" value="" /></td>
               <td>${product.id}</td>
               <td><img width="50px" src="${product.images[0]}"></img></td>
               <td>${product.title}</td>
@@ -375,7 +379,7 @@
 
     // Services (Model)
     function PlugAgent () {
-      const _mock = false
+      const _mock = true
       const api = _mock ? {} : new UrbitHttpApi.Urbit("")
       api.ship = window.ship;
       return {
