@@ -288,6 +288,8 @@
         },
         async updateProduct (id) {
           const { title, description, price, images } = this.validateProduct()
+          console.log(this.currentStore.id)
+          console.log({ id, title, description, images, price})
           await this.agent.updateProduct(this.currentStore.id, { id, title, description, images, price})
           this.navigate('products')
         },
@@ -409,7 +411,7 @@
             this.catalog = this.catalog.filter(item => item.id != id)
             this.catalog.push({ id, product: { id, title, description, images, price }})
           } else {
-            await this._poke('update-product', { 'store-id': storeId, id, title, description, images, price })
+            await this._poke('update-product', { 'store-id': storeId, 'product-id': id, title, description, images, price })
             await this.refreshState()    
           }
         },
@@ -464,7 +466,7 @@
           console.log(JSON.stringify(this.stores))
         },
         refreshState: async function () {
-          await this.fetchAllProducts()    
+          await this.fetchAllProducts(this.lastStoreId)
           await this.fetchAllStores()    
         }
       }
