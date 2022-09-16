@@ -33,7 +33,7 @@
   :-  ~
   %=  this
 ::  todo: remove default
-    stores  (molt ~[[1 [id=1 title="Default Store" description=~ avatar=~ catalog=~ stewards=~]]])
+    stores  ~
   ==
 ::
 ++  on-save

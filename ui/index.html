@@ -82,10 +82,10 @@
         height: 150px;
         border-radius: 75px;
         overflow: hidden;
+        margin-right: 12px;
       }
       .preview-header-content {
         width: calc(100% - 160px);
-        margin-left: 12px;
       }
       .product-wrapper {
         margin-top: 48px;
@@ -103,6 +103,11 @@
         padding: 12px;
         position: fixed;
         right: -48px;
+      }
+      .end-preview-button {
+        position: absolute;
+        top: 12px;
+        right: 12px;
       }
     </style>
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -124,7 +129,7 @@
               ${this.Header()}
               ${this.PageContent(`
                 <div class="page-content">
-                  <h2>Welcome to Plug</h2>
+                  <h2>Welcome to Plug &#128268;</h2>
                   ${this.PreviewButton()}
                   ${this.ProductTable()}
                   ${this.OrdersTable()}
@@ -188,7 +193,10 @@
         NewStorePage () {
           return `
             <div>
-              ${this.PageContent(this.StoreForm('Welcome to Plug! - What Would You like to call your first store?', this.CreateStoreButton(), store={},  deleteButton=false))}
+              ${this.PageContent(`
+                <h1>&#128268; Plug: Sell on Urbit</h1>
+                ${this.StoreForm('Welcome to Plug! - What Would You like to call your first store?', this.CreateStoreButton(), store={},  deleteButton=false)}
+              `)}
             </div>
           `
         },
@@ -204,6 +212,7 @@
                   ${catalog.reduce((html, { product }) => html + this.ProductCard(product), '')}
                 </div>
               `)}
+              ${this.EndPreviewButton()}
             </div>
           `
         },
@@ -221,6 +230,7 @@
                 </div>
               </div>
             `)}
+            ${this.EndPreviewButton()}
           `
         },
         // header Components
@@ -229,7 +239,7 @@
             <div class="pure-g">
               <div class="pure-u-2-3">
                 <div class="navbar nav-left pure-menu pure-menu-horizontal">
-                  <a href="#" onclick="window.app.navigate('dashboard')" class="pure-menu-heading pure-menu-link plug-menu-link">Plug</a>
+                  <a href="#" onclick="window.app.navigate('dashboard')" class="pure-menu-heading pure-menu-link plug-menu-link">&#128268; Plug</a>
                   <ul class="pure-menu-list">
                     <li class="pure-menu-item">
                       <a href="#" onclick="window.app.navigate('products')" class="pure-menu-link plug-menu-link">Products</a>
@@ -279,21 +289,23 @@
             <div><h2>Products</h2></div>
             <button class="pure-button pad-bottom" onclick="window.app.navigate('create-product')">Add New</button>
             <div>
-              <table class="pure-table pure-table-bordered">
-                <thead>
-                  <tr>
-                      <th>${this.ProductTableDropDown()}</th>
-                      <th>ID</th>
-                      <th>Image</th>
-                      <th>Name</th>
-                      <th>Price</th>
-                      <th>Manage</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${this.agent.catalog.reduce((html, product) => html + this.ProductRow(product.product), '')}
-                </tbody>
-              </table>            
+              ${(this.agent.catalog.length > 0) ? `
+                <table class="pure-table pure-table-bordered">
+                  <thead>
+                    <tr>
+                        <th>${this.ProductTableDropDown()}</th>
+                        <th>ID</th>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Manage</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${this.agent.catalog.reduce((html, product) => html + this.ProductRow(product.product), '')}
+                  </tbody>
+                </table>            
+              ` : ''}
             </div>
           `
         },
@@ -436,7 +448,7 @@
                   </div>
                 ` : `
                   <div class="store-about-us">
-                    <p>Remember to add a description to your store. it will Show up here</p>
+                    <p>Remember to add an About Us to your store. It will Show up here</p>
                   </div>
                 `}
               </div>
@@ -486,6 +498,13 @@
           return `
             <button class="pure-button" onclick="window.app.navigate('store-preview')">
               Preview Store
+            </button>
+          `
+        },
+        EndPreviewButton () {
+          return `
+            <button class="pure-button end-preview-button" onclick="window.app.navigate('dashboard')">
+              End
             </button>
           `
         },
@@ -670,7 +689,7 @@
 
     // Services (Model)
     function PlugAgent () {
-      const _mock = true
+      const _mock = false
       const api = _mock ? {} : new UrbitHttpApi.Urbit("")
       api.ship = window.ship;
       return {
