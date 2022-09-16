@@ -126,6 +126,13 @@
             </div>
           `
         },
+        NewStorePage () {
+          return `
+            <div>
+              ${this.PageContent(this.StoreForm('Welcome to Plug! - What Would You like to call your first store?', this.CreateStoreButton(), store={},  deleteButton=false))}
+            </div>
+          `
+        },
         // header Components
         Header () {
           return `
@@ -350,7 +357,7 @@
         onLoad: async function () {
           await this.agent.fetchAllStores()
           if (this.agent.stores.length < 1) {
-            this.navigate('create-store')
+            this.navigate('new-store')
           } else {
             this.currentStore = this.agent.stores[0]
             await this.agent.fetchAllProducts(this.currentStore.id)
@@ -382,6 +389,9 @@
             case "create-store":
               pageHTML = this.CreateStorePage()
               break;
+            case "new-store":
+              pageHTML = this.NewStorePage()
+              break;
           }
           document.getElementById("app").innerHTML = pageHTML
         },
@@ -402,8 +412,12 @@
         },
         async deleteStore () {
           await this.agent.deleteStore(this.currentStore.id)
-          this.currentStore = this.agent.stores[0]
-          this.navigate('dashboard')
+          if (this.agent.stores.length == 0) {
+            this.navigate('new-store')
+          } else {
+            this.currentStore = this.agent.stores[0]
+            this.navigate('dashboard')
+          }
         },
         async createProduct () {
           const { title, description, price, images } = this.validateProduct()
@@ -553,8 +567,10 @@
           } else {
             await this._poke('delete-store', { id })
             await this.fetchAllStores()
-            this.lastStoreId = this.stores[0].id
-            await this.refreshState()
+            if (this.stores.length >= 1) {
+              this.lastStoreId = this.stores[0].id
+              await this.refreshState()
+            }
           }
         },
         createProduct: async function (storeId, { title, description, images, price }) {
