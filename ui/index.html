@@ -46,6 +46,47 @@
         background-color: rgb(223, 117, 20);
         color: #fff;
       }
+      /* Product card */
+      .product-card {
+        position: relative;
+        width: 150px;
+        height: 200px;
+        background-size: cover;
+        /* positioning in grid */
+        float: left;
+        margin-right: 12px;
+      }
+      .product-title {
+        position: absolute;
+        margin: 0;
+        background: rgba(256,256,256,0.4);
+        top: 0px;
+        left: 0px;
+        right: 0px;
+        padding-top: 4px;
+        padding-left: 4px;
+      }
+      .view-product-button {
+        position: absolute;
+        margin: 0;
+        bottom: 8px;
+        right: 8px;
+      }
+      /* store preview header */
+      .preview-header {
+        margin-top: 48px;
+        display: flex;
+      }
+      .store-avatar {
+        width: 150px;
+        height: 150px;
+        border-radius: 75px;
+        overflow: hidden;
+      }
+      .preview-header-content {
+        width: calc(100% - 160px);
+        margin-left: 12px;
+      }
     </style>
     <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
@@ -67,6 +108,7 @@
               ${this.PageContent(`
                 <div class="page-content">
                   <h2>Welcome to Plug</h2>
+                  ${this.PreviewButton()}
                   ${this.ProductTable()}
                   ${this.OrdersTable()}
                 </div>
@@ -113,7 +155,7 @@
               ${this.PageContent(`
                 <div class="page-content">
                   <h2>Store Settings</h2>
-                  ${this.StoreForm('Edit Store', this.SaveStoreButton(),this.currentStore.store, true, true)}
+                  ${this.StoreForm('Edit Store', this.SaveStoreButton(), this.currentStore.store, true, true)}
                 </div>
               `)}
             </div>
@@ -130,6 +172,50 @@
           return `
             <div>
               ${this.PageContent(this.StoreForm('Welcome to Plug! - What Would You like to call your first store?', this.CreateStoreButton(), store={},  deleteButton=false))}
+            </div>
+          `
+        },
+        StorePreviewPage () {
+          const { store } = this.currentStore
+          const catalog = this.agent.catalog
+          return `
+            <div>
+              ${this.PageContent(`
+                <div class="preview-header">
+                  ${store.avatar ? `
+                    <div class="store-avatar">
+                      <img src="${store.avatar}"/>
+                    </div>
+                  ` : ''}
+                  <div class="preview-header-content">
+                    <h1>${store.title}</h2>
+                    ${store.description ? `
+                      <div class="store-about-us">
+                        <p>${store.description}</p>
+                      </div>
+                    ` : `
+                      <div class="store-about-us">
+                        <p>Remember to add a description to your store. it will Show up here</p>
+                      </div>
+                    `}
+                  </div>
+                </div>
+                <h2>Products</h2>
+                <div class="product-grid">
+                  <div class="product-card" style="background-image: url('https://random.imagecdn.app/300/500')">
+                    <h4 class="product-title">Title</h4>
+                    <button class="pure-button view-product-button">View</img>
+                  </div>
+                  <div class="product-card" style="background-image: url('https://random.imagecdn.app/302/500')">
+                    <h4 class="product-title">Title</h4>
+                    <button class="pure-button view-product-button">View</img>
+                  </div>
+                  <div class="product-card" style="background-image: url('https://random.imagecdn.app/301/500')">
+                    <h4 class="product-title">Title</h4>
+                    <button class="pure-button view-product-button">View</img>
+                  </div>
+                </div>
+              `)}
             </div>
           `
         },
@@ -353,12 +439,20 @@
         // Orders Components
         OrdersTable () {
           return `
-          <div>
-            <h2>Orders</h2>
-            <h4>Coming Soon!</h4>
-          </div>          `
+            <div>
+              <h2>Orders</h2>
+              <h4>Coming Soon!</h4>
+            </div>
+          `
         },
         // Generic Components
+        PreviewButton () {
+          return `
+            <button class="pure-button" onclick="window.app.navigate('store-preview')">
+              Preview Store
+            </button>
+          `
+        },
         PageContent (content) {
           return `
             <div class="pure-g">
@@ -407,6 +501,9 @@
               break;
             case "new-store":
               pageHTML = this.NewStorePage()
+              break;
+            case "store-preview":
+              pageHTML = this.StorePreviewPage()
               break;
           }
           document.getElementById("app").innerHTML = pageHTML
@@ -534,7 +631,7 @@
 
     // Services (Model)
     function PlugAgent () {
-      const _mock = false
+      const _mock = true
       const api = _mock ? {} : new UrbitHttpApi.Urbit("")
       api.ship = window.ship;
       return {
@@ -657,8 +754,13 @@
         fetchAllStores: async function () {
           if(this._mock) {
             this.stores = [
-              { "store":{ "title":"Default Store", "id": 1 }, "id": 1 },
-              { "store":{ "title":"My Side Hsutle", "id": 2 },"id": 2},
+              { "store":{ 
+                "title":"Default Store",
+                "avatar": "https://random.imagecdn.app/150/151",
+                "id": 1,
+                "description": "Lorem Ipsum Dolor Sit Amet. Lorem Ipsum Dolor Sit Amet. Lorem Ipsum Dolor Sit Amet. Lorem Ipsum Dolor Sit Amet. Lorem Ipsum Dolor Sit Amet. Lorem Ipsum Dolor Sit Amet."
+              }, "id": 1 },
+              { "store":{ "title":"My Side Hsutle", "avatar": "https://random.imagecdn.app/150/151", "id": 2 },"id": 2},
             ]
           } else {
             const stores = await this._scry('/stores')
