@@ -444,7 +444,7 @@
         removeCheckedProducts () {
           document.querySelectorAll('input[type="checkbox"]').forEach(el => {
             if (el.checked) {
-              const productId = el.parentElement.nextElementSibling.innerHTML
+              const productId = Number(el.parentElement.nextElementSibling.innerHTML)
               this.deleteProduct(productId)
             }
           })
