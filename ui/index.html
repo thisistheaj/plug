@@ -113,7 +113,7 @@
               ${this.PageContent(`
                 <div class="page-content">
                   <h2>Store Settings</h2>
-                  ${this.StoreForm('Edit Store', this.SaveStoreButton(),this.currentStore.store, true)}
+                  ${this.StoreForm('Edit Store', this.SaveStoreButton(),this.currentStore.store, true, true)}
                 </div>
               `)}
             </div>
@@ -264,7 +264,7 @@
                   <label for="product-image-url">Image Link</label>
                   <input type="text" id="product-image-url" placeholder="https://mysite.com/someimage.jpg" />
                 </div>
-                <button type="button" onclick="window.app.addImage()" class="pure-button">
+                <button type="button" onclick="window.app.addProductImage()" class="pure-button">
                   Add Image
                 </button>
                 <div class="pure-control-group">
@@ -299,7 +299,7 @@
           `
         },
         // Store (Settings) Components
-        StoreForm (title, button, store={},  deleteButton=false) {
+        StoreForm (title, button, store={}, deleteButton=false, details=false) {
           return `
             <form class="pure-form pure-form-stacked">
               <fieldset>
@@ -308,6 +308,22 @@
                   <label for="store-title">Title</label>
                   <input ${store.title ? `value="${store.title}"` : ''} autofocus type="text" id="store-title" placeholder="My Awesome Side Hustle" />
                 </div>
+                ${details ? `
+                  <label>Brand Avatar</label>
+                  <div id="store-image">
+                    ${store.avatar ?  this.ImageInput(store.avatar) : ''}
+                  </div>
+                  <div class="pure-control-group">
+                    <input type="text" id="store-image-url" placeholder="https://mysite.com/someimage.jpg" />
+                  </div>
+                  <button type="button" onclick="window.app.addStoreImage()" class="pure-button">
+                    Upload Image
+                  </button>
+                  <div class="pure-control-group">
+                    <label for="store-description">About Us</label>
+                    <textarea id="store-description" placeholder="What do you want to tell customers on your main page?">${store.description ? store.description : ''}</textarea>
+                  </div>
+                ` :''}
                 ${button}
                 ${deleteButton ? this.DeleteStoreButton() : ''}
               </fieldset>
@@ -407,7 +423,9 @@
         },
         async saveStore () {
           const title = document.getElementById('store-title').value
-          await this.agent.updateStore(this.currentStore.id, title)
+          const description = document.getElementById('store-description').value
+          const avatar = document.querySelector('#store-image img').src
+          await this.agent.updateStore(this.currentStore.id, title, description, avatar)
           this.changeStore(this.currentStore.id)
         },
         async deleteStore () {
@@ -440,10 +458,15 @@
           this.navigate('dashboard')
         },
         // image input interactions
-        addImage () {
+        addProductImage () {
           const url = document.getElementById("product-image-url").value
           const list = document.getElementById("product-images")
           list.innerHTML = list.innerHTML + this.ImageInput(url)
+        },
+        addStoreImage () {
+          const url = document.getElementById("store-image-url").value
+          const div = document.getElementById("store-image")
+          div.innerHTML = this.ImageInput(url)
         },
         removeImageInput (el) {
           el.parentElement.remove();
@@ -547,17 +570,19 @@
             await this.refreshState()
           }
         },
-        updateStore: async function (id, title) {
+        updateStore: async function (id, title, description, avatar) {
           if (this._mock) {            
             const store = { id, store: {
               id,
               title,
+              description,
+              avatar,
             }}
             this.stores = this.stores.filter(store => store.id != id)
             this.stores.push(store)
             this.currentStore = store
           } else {
-            await this._poke('update-store', { id, title })
+            await this._poke('update-store', { id, title, description, avatar })
             await this.refreshState()
           }
         },
