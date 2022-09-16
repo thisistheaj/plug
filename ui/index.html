@@ -87,6 +87,23 @@
         width: calc(100% - 160px);
         margin-left: 12px;
       }
+      .product-wrapper {
+        margin-top: 48px;
+        display: flex;
+      }
+      .product-images-slider {
+        width: 50%;
+        padding: 12px;
+      }
+      .product-images-slider img {
+        width: 100%;
+      }
+      .product-content {
+        width: 50%;
+        padding: 12px;
+        position: fixed;
+        right: -48px;
+      }
     </style>
     <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
@@ -181,42 +198,29 @@
           return `
             <div>
               ${this.PageContent(`
-                <div class="preview-header">
-                  ${store.avatar ? `
-                    <div class="store-avatar">
-                      <img src="${store.avatar}"/>
-                    </div>
-                  ` : ''}
-                  <div class="preview-header-content">
-                    <h1>${store.title}</h2>
-                    ${store.description ? `
-                      <div class="store-about-us">
-                        <p>${store.description}</p>
-                      </div>
-                    ` : `
-                      <div class="store-about-us">
-                        <p>Remember to add a description to your store. it will Show up here</p>
-                      </div>
-                    `}
-                  </div>
-                </div>
+                ${this.PreviewHeader(store)}
                 <h2>Products</h2>
                 <div class="product-grid">
-                  <div class="product-card" style="background-image: url('https://random.imagecdn.app/300/500')">
-                    <h4 class="product-title">Title</h4>
-                    <button class="pure-button view-product-button">View</img>
-                  </div>
-                  <div class="product-card" style="background-image: url('https://random.imagecdn.app/302/500')">
-                    <h4 class="product-title">Title</h4>
-                    <button class="pure-button view-product-button">View</img>
-                  </div>
-                  <div class="product-card" style="background-image: url('https://random.imagecdn.app/301/500')">
-                    <h4 class="product-title">Title</h4>
-                    <button class="pure-button view-product-button">View</img>
-                  </div>
+                  ${catalog.reduce((html, { product }) => html + this.ProductCard(product), '')}
                 </div>
               `)}
             </div>
+          `
+        },
+        ProductPreviewPage (product) {
+          return `
+            ${this.PageContent(`
+              <div class="product-wrapper">
+                <div class="product-images-slider">
+                  ${product.images.reduce((html, image) => html + `<img src="${image}" />`, '')}
+                </div>
+                <div class="product-content">
+                  <h1>${product.title}</h1>
+                  <p>${product.description}</p>
+                  <button class="pure-button pure-button-primary">Add To Cart</button>
+                </div>
+              </div>
+            `)}
           `
         },
         // header Components
@@ -415,6 +419,38 @@
               </fieldset>
             </form>          `
         },
+        // Preview Components
+        PreviewHeader (store) {
+          return `
+            <div class="preview-header">
+              ${store.avatar ? `
+                <div class="store-avatar">
+                  <img src="${store.avatar}"/>
+                </div>
+              ` : ''}
+              <div class="preview-header-content">
+                <h1>${store.title}</h2>
+                ${store.description ? `
+                  <div class="store-about-us">
+                    <p>${store.description}</p>
+                  </div>
+                ` : `
+                  <div class="store-about-us">
+                    <p>Remember to add a description to your store. it will Show up here</p>
+                  </div>
+                `}
+              </div>
+            </div>
+          `
+        },
+        ProductCard (product) {
+          return `
+            <div class="product-card" style="background-image: url('${product.images.length > 0 ? product.images[0] : ``}')">
+              <h4 class="product-title">${product.title}</h4>
+              <button onclick="window.app.navigate('product-preview', { 'product': ${this.pass(product)}})"class="pure-button view-product-button">View</img>
+            </div>
+          `
+        },
         DeleteStoreButton () {
           return `
             <button class="pure-button button-danger" onclick="window.app.deleteStore()">
@@ -504,6 +540,9 @@
               break;
             case "store-preview":
               pageHTML = this.StorePreviewPage()
+              break;
+            case "product-preview":
+              pageHTML = this.ProductPreviewPage(params.product)
               break;
           }
           document.getElementById("app").innerHTML = pageHTML
@@ -728,7 +767,13 @@
               {
                 "product": {
                   "title": "MrCool 12k btu",
-                  "images": ["https://random.imagecdn.app/150/150"],
+                  "images": [
+                    "https://random.imagecdn.app/500/500",
+                    "https://random.imagecdn.app/500/501",
+                    "https://random.imagecdn.app/500/250",
+                    "https://random.imagecdn.app/250/500",
+                    "https://random.imagecdn.app/800/1000",
+                  ],
                   "description": "An AC unit with 12k btu cooling power",
                   "id": 1,
                   "price": 69990
