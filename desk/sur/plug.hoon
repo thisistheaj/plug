@@ -10,18 +10,19 @@
 +$  id  @
 +$  title  tape
 +$  description  tape
++$  image  tape
 +$  images  (list tape)
 +$  price  @ud
 ::  Core Data Models
 ::
 +$  product  [=id =title =description =images =price]
 +$  catalog  ((mop id product) gth)
-+$  store  [=id =title =catalog =stewards]
++$  store  [=id =title =description avatar=image =catalog =stewards]
 ::  Poke actions
 ::
 +$  action
   $%  [%create-store =title]
-      [%update-store =id =title]
+      [%update-store =id =title =description avatar=image]
       [%delete-store =id]
       [%create-product store-id=id =title =description =images =price]
       [%update-product store-id=id product-id=id =title =description =images =price]

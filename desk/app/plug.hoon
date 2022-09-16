@@ -32,7 +32,8 @@
   ^-  (quip card _this)
   :-  ~
   %=  this
-    stores  (molt ~[[1 [id=1 title="Default Store" catalog=~ stewards=~]]])
+::  todo: remove default
+    stores  (molt ~[[1 [id=1 title="Default Store" description=~ avatar=~ catalog=~ stewards=~]]])
   ==
 ::
 ++  on-save
@@ -66,12 +67,12 @@
     ?-    -.action
         %create-store
       =/  n  (next-store-id stores)
-      `state(stores (~(put by stores) n [id=n title=title.action catalog=~ stewards=~]))
+      `state(stores (~(put by stores) n [id=n title=title.action description=~ avatar=~ catalog=~ stewards=~]))
     ::
         %update-store
       ?>  (~(has by stores) id.action)
       =/  s  `store`(~(got by stores) id.action)
-      `state(stores (~(put by stores) id.action [id=id.action title=title.action catalog=catalog.s stewards=stewards.s]))
+      `state(stores (~(put by stores) id.action [id=id.action title=title.action description=description.action avatar=avatar.action catalog=catalog.s stewards=stewards.s]))
     ::
         %delete-store
       ?>  (~(has by stores) id.action)
@@ -87,6 +88,8 @@
         %+  ~(put by stores)  id.s
         :*  id=id.s
             title=title.s
+            description=description.s
+            avatar=avatar.s
             %^  put:catalog-orm  catalog.s  n
             %-  product
             :*  id=n
@@ -108,6 +111,8 @@
         %+  ~(put by stores)  id.s
         :*  id=id.s
             title=title.s
+            description=description.s
+            avatar=avatar.s
             %^  put:catalog-orm  catalog.s  product-id.action
             %-  product
             :*  id=product-id.action
@@ -130,6 +135,8 @@
         %+  ~(put by stores)  id.s
         :*  id=id.s
             title=title.s
+            description=description.s
+            avatar=avatar.s
             +:(del:catalog-orm catalog.s product-id.action)
             stewards=stewards.s
         ==
