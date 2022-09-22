@@ -375,7 +375,7 @@
                 </div>
                 <div class="pure-control-group">
                   <label for="product-price">Price</label>
-                  <input ${product.price ? `value="${product.price}"` : ''} type="text" id="product-price" placeholder="$99.99" />
+                  <input ${product.price ? `value="${this.price(product.price)}"` : ''} type="text" id="product-price" placeholder="$99.99" />
                 </div>
                 ${button}
               </fieldset>
@@ -528,6 +528,9 @@
             await this.agent.fetchAllProducts(this.currentStore.id)
             this.navigate('dashboard')
           }
+          console.log(
+            [900000,900010,900001].map(this.price)
+          )
         },
         // Router
         navigate (page, params={}) {
@@ -651,8 +654,13 @@
         // }
         // UI Utils
         price (cents) {
-          const ones = cents % 10
-          return ones > 0 ? '$' + (cents/100) : '$' + (cents/100) + '0'
+          const hasOnes = (cents % 10) > 0
+          const hasTens = (cents % 100) > 0
+          return hasOnes  ? 
+            `$${cents/100}` : 
+            hasTens ? 
+              `$${cents/100}0` :
+              `$${cents/100}.00`
         },
         pass (obj) {
           const tmp = '~tmp~'
