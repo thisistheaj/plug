@@ -72,21 +72,39 @@
         bottom: 8px;
         right: 8px;
       }
-      /* store preview header */
-      .preview-header {
+      /* store preview hero */
+      .preview-hero {
         margin-top: 48px;
         display: flex;
       }
-      .store-avatar {
+      .hero-avatar {
         width: 150px;
         height: 150px;
         border-radius: 75px;
         overflow: hidden;
         margin-right: 12px;
       }
-      .preview-header-content {
+      .preview-hero-content {
         width: calc(100% - 160px);
       }
+      /* store preview header */
+      .preview-header {
+        margin-top: 8px;
+        padding-bottom: 8px;
+        display: flex;
+        border-bottom: solid 4px #444;
+      }
+      .header-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 18px;
+        overflow: hidden;
+        margin-right: 12px;
+      }
+      .preview-header-title h1 {
+        margin: 0;
+      }
+      /* Product Page */
       .product-wrapper {
         margin-top: 48px;
         display: flex;
@@ -104,12 +122,50 @@
         position: fixed;
         right: -48px;
       }
+      .preview-mobile-title {
+        padding: 12px;
+        display: none;
+      }
+      .preview-mobile-title h1 {
+        margin: 0 12px;
+      }
+      @media (max-width: 760px) {
+        .product-wrapper {
+          display: block;
+        }
+        .product-images-slider {
+          width: calc(100% - 24px);
+        }
+        .product-content {
+          width: calc(100% - 24px);
+          position: unset;
+          margin-bottom: 48px;
+        }
+        .preview-mobile-title {
+          display: unset;
+        }
+      }
       .end-preview-button {
-        position: absolute;
-        top: 12px;
+        position: fixed;
+        bottom: 12px;
         right: 12px;
       }
-    </style>
+      .back-button {
+        position: fixed;
+        bottom: 12px;
+        left: 12px;
+      }
+      .desktop-hide {
+        display: none;
+      }
+      @media (max-width: 760px) {
+        .mobile-hide {
+          display: none;
+        }
+        .desktop-hide {
+          display: unset;
+        }
+      }    </style>
     <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
   <body>
@@ -206,20 +262,24 @@
           return `
             <div>
               ${this.PageContent(`
-                ${this.PreviewHeader(store)}
+                ${this.PreviewStoreHero(store)}
                 <h2>Products</h2>
                 <div class="product-grid">
-                  ${catalog.reduce((html, { product }) => html + this.ProductCard(product), '')}
+                  ${catalog.reduce((html, { product }) => html + this.ProductCard(product, store), '')}
                 </div>
               `)}
               ${this.EndPreviewButton()}
             </div>
           `
         },
-        ProductPreviewPage (product) {
+        ProductPreviewPage (product, store) {
           return `
             ${this.PageContent(`
+              ${this.PreviewStoreHeader(store)}
               <div class="product-wrapper">
+                <div class="product-content preview-mobile-title">
+                  <h1>${product.title}</h1>
+                </div>
                 <div class="product-images-slider">
                   ${product.images.reduce((html, image) => html + `<img src="${image}" />`, '')}
                 </div>
@@ -230,6 +290,7 @@
                 </div>
               </div>
             `)}
+            ${this.BackButton()}
             ${this.EndPreviewButton()}
           `
         },
@@ -432,15 +493,15 @@
             </form>          `
         },
         // Preview Components
-        PreviewHeader (store) {
+        PreviewStoreHero (store) {
           return `
-            <div class="preview-header">
+            <div class="preview-hero">
               ${store.avatar ? `
-                <div class="store-avatar">
+                <div class="hero-avatar">
                   <img src="${store.avatar}"/>
                 </div>
               ` : ''}
-              <div class="preview-header-content">
+              <div class="preview-hero-content">
                 <h1>${store.title}</h2>
                 ${store.description ? `
                   <div class="store-about-us">
@@ -455,11 +516,25 @@
             </div>
           `
         },
-        ProductCard (product) {
+        PreviewStoreHeader (store) {
+          return `
+            <div class="preview-header">
+              ${store.avatar ? `
+                <div class="header-avatar">
+                  <img src="${store.avatar}"/>
+                </div>
+              ` : ''}
+              <div class="preview-header-title">
+                <h1>${store.title}</h2>
+              </div>
+            </div>
+          `
+        },
+        ProductCard (product, store) {
           return `
             <div class="product-card" style="background-image: url('${product.images.length > 0 ? product.images[0] : ``}')">
               <h4 class="product-title">${product.title}</h4>
-              <button onclick="window.app.navigate('product-preview', { 'product': ${this.pass(product)}})"class="pure-button view-product-button">View</img>
+              <button onclick="window.app.navigate('product-preview', { 'product': ${this.pass(product)}, 'store': ${this.pass(store)}})"class="pure-button view-product-button">View</img>
             </div>
           `
         },
@@ -504,16 +579,24 @@
         EndPreviewButton () {
           return `
             <button class="pure-button end-preview-button" onclick="window.app.navigate('dashboard')">
-              End
+              End Preview
+            </button>
+          `
+        },
+        BackButton () {
+          return `
+            <button class="pure-button back-button" onclick="window.app.navigate('store-preview')">
+              Back
             </button>
           `
         },
         PageContent (content) {
           return `
             <div class="pure-g">
-              <div class="pure-u-1-12"></div>
-              <div class="pure-u-5-6">${content}</div>
-              <div class="pure-u-1-12"></div>
+              <div class="pure-u-1-12 mobile-hide"></div>
+              <div class="pure-u-5-6 mobile-hide">${content}</div>
+              <div class="pure-u-1 desktop-hide">${content}</div>
+              <div class="pure-u-1-12 mobile-hide"></div>
             </div>
           `
         },
@@ -564,7 +647,7 @@
               pageHTML = this.StorePreviewPage()
               break;
             case "product-preview":
-              pageHTML = this.ProductPreviewPage(params.product)
+              pageHTML = this.ProductPreviewPage(params.product, params.store)
               break;
           }
           document.getElementById("app").innerHTML = pageHTML
@@ -702,7 +785,7 @@
 
     // Services (Model)
     function PlugAgent () {
-      const _mock = true
+      const _mock = false
       const api = _mock ? {} : new UrbitHttpApi.Urbit("")
       api.ship = window.ship;
       return {
