@@ -654,10 +654,15 @@
           const ones = cents % 10
           return ones > 0 ? '$' + (cents/100) : '$' + (cents/100) + '0'
         },
-        pass (item) {
-          return JSON
-            .stringify(item)
+        pass (obj) {
+          const tmp = '~tmp~'
+          console.log(obj)
+          obj = JSON
+            .stringify(obj)
+            .replaceAll(`'`,`\\\'`)
             .replaceAll(`"`,`'`)
+          console.log(obj)
+          return obj
         },
         validateProduct () {
           const title = document.getElementById("product-title").value
@@ -689,7 +694,7 @@
 
     // Services (Model)
     function PlugAgent () {
-      const _mock = false
+      const _mock = true
       const api = _mock ? {} : new UrbitHttpApi.Urbit("")
       api.ship = window.ship;
       return {
@@ -785,7 +790,7 @@
             this.catalog = [
               {
                 "product": {
-                  "title": "MrCool 12k btu",
+                  "title": "MrCool's 12k btu",
                   "images": [
                     "https://random.imagecdn.app/500/500",
                     "https://random.imagecdn.app/500/501",
