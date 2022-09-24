@@ -84,6 +84,9 @@
         overflow: hidden;
         margin-right: 12px;
       }
+      .hero-avatar img {
+        width: 100%;
+      }
       .preview-hero-content {
         width: calc(100% - 160px);
       }
@@ -117,10 +120,10 @@
         width: 100%;
       }
       .product-content {
-        width: 50%;
+        width: 35%;
         padding: 12px;
         position: fixed;
-        right: -48px;
+        right: 8.3%;
       }
       .preview-mobile-title {
         padding: 12px;
@@ -286,6 +289,7 @@
                 <div class="product-content">
                   <h1>${product.title}</h1>
                   <p>${product.description}</p>
+                  <h3>${this.price(product.price)}</h3>
                   <button class="pure-button pure-button-primary">Add To Cart</button>
                 </div>
               </div>
@@ -611,9 +615,6 @@
             await this.agent.fetchAllProducts(this.currentStore.id)
             this.navigate('dashboard')
           }
-          console.log(
-            [900000,900010,900001].map(this.price)
-          )
         },
         // Router
         navigate (page, params={}) {
