@@ -31,15 +31,13 @@
 ::  Subscription Updates
 ::
 +$  update
-  ::$%  [%create-store =id =title]
-  ::    [%update-store =id =title =description avatar=image]
-  ::    [%delete-store =id]
-  ::    [%create-product store-id=id =title =description =images =price]
-  ::    [%update-product store-id=id product-id=id =title =description =images =price]
-  ::    [%delete-product store-id=id product-id=id]
-  ::    [%initial =stores]
-  ::==
   $%  [%initial =stores]
+      [%create-store =id =title]
+      [%update-store =id =title =description avatar=image]
+      [%delete-store =id]
+      [%create-product store-id=id =title =description =images =price]
+      [%update-product store-id=id product-id=id =title =description =images =price]
+      [%delete-product store-id=id product-id=id]
   ==
 ::  Top-level Data Structures
 ::
