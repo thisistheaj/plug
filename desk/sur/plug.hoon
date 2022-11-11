@@ -28,6 +28,19 @@
       [%update-product store-id=id product-id=id =title =description =images =price]
       [%delete-product store-id=id product-id=id]
   ==
+::  Subscription Updates
+::
++$  update
+  ::$%  [%create-store =id =title]
+  ::    [%update-store =id =title =description avatar=image]
+  ::    [%delete-store =id]
+  ::    [%create-product store-id=id =title =description =images =price]
+  ::    [%update-product store-id=id product-id=id =title =description =images =price]
+  ::    [%delete-product store-id=id product-id=id]
+  ::    [%initial =stores]
+  ::==
+  $%  [%initial =stores]
+  ==
 ::  Top-level Data Structures
 ::
 +$  stores  (map id store)

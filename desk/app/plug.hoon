@@ -32,7 +32,6 @@
   ^-  (quip card _this)
   :-  ~
   %=  this
-::  todo: remove default
     stores  ~
   ==
 ::
@@ -145,7 +144,18 @@
   ==
 --
 ::
-++  on-watch  on-watch:def
+++  on-watch
+  |=  =path
+  ^-  (quip card _this)
+  ?+    path  (on-watch:def path)
+      [%updates ~]
+    ::  only allow other agents on this ship for now
+    ?>  =(src.bowl our.bowl)
+    :_  this
+    :~  [%give %fact ~ %plug-update !>(`update`initial+stores)]
+    ==
+  ==
+::
 ++  on-leave  on-leave:def
 ++  on-peek
   |=  =path
