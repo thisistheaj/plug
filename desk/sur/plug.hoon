@@ -35,7 +35,7 @@
       [%create-store =id =title]
       [%update-store =id =title =description avatar=image]
       [%delete-store =id]
-      [%create-product store-id=id =title =description =images =price]
+      [%create-product =id store-id=id =title =description =images =price]
       [%update-product store-id=id product-id=id =title =description =images =price]
       [%delete-product store-id=id product-id=id]
   ==

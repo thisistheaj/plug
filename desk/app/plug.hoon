@@ -81,7 +81,7 @@
       ?>  (~(has by stores) store-id.action)
       =/  s  `store`(~(got by stores) store-id.action)
       =/  n  (next-product-id catalog.s)
-      :-  ~
+      :_
       %=  state
         stores
         %+  ~(put by stores)  id.s
@@ -98,6 +98,18 @@
                 price=price.action
             ==
             stewards=stewards.s
+        ==
+      == 
+      :~  :*  %give  %fact  ~[/updates]  %plug-update
+        !>  ^-  update
+          :-  -.action
+            :*  id=n
+                store-id=store-id.action
+                title=title.action
+                description=description.action
+                images=images.action
+                price=price.action
+            ==
         ==
       ==
     ::
