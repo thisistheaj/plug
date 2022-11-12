@@ -66,16 +66,56 @@
     ?-    -.action
         %create-store
       =/  n  (next-store-id stores)
-      `state(stores (~(put by stores) n [id=n title=title.action description=~ avatar=~ catalog=~ stewards=~]))
+      :_
+      %=  state
+        stores
+        %+  ~(put by stores)  n 
+        :*  id=n
+            title=title.action
+            description=~
+            avatar=~
+            catalog=~
+            stewards=~
+        ==
+      ==
+      :~  :*  %give  %fact  ~[/updates]  %plug-update
+            !>  ^-  update
+            :-  -.action
+            :*  id=n
+                title=title.action
+                description=~
+                avatar=~
+            ==
+          ==
+      ==
     ::
         %update-store
       ?>  (~(has by stores) id.action)
       =/  s  `store`(~(got by stores) id.action)
-      `state(stores (~(put by stores) id.action [id=id.action title=title.action description=description.action avatar=avatar.action catalog=catalog.s stewards=stewards.s]))
+      :_
+      %=  state
+        stores
+        %+  ~(put by stores)  id.action
+        :*  id=id.action
+            title=title.action
+            description=description.action
+            avatar=avatar.action
+            catalog=catalog.s
+            stewards=stewards.s
+        ==
+      ==
+      :~  :*  %give  %fact  ~[/updates]  %plug-update
+              !>(`update`action)
+          ==
+      ==
     ::
         %delete-store
       ?>  (~(has by stores) id.action)
-      `state(stores (~(del by stores) id.action))
+      :_  state(stores (~(del by stores) id.action))
+      :~  :*  %give  %fact  ~[/updates]  %plug-update
+              !>(`update`action)
+          ==
+      ==
     ::
         %create-product
       ?>  (~(has by stores) store-id.action)
@@ -103,8 +143,8 @@
       :~  :*  %give  %fact  ~[/updates]  %plug-update
         !>  ^-  update
           :-  -.action
-            :*  id=n
-                store-id=store-id.action
+            :*  store-id=store-id.action
+                product-id=n
                 title=title.action
                 description=description.action
                 images=images.action
@@ -116,7 +156,7 @@
         %update-product
       ?>  (~(has by stores) store-id.action)
       =/  s  `store`(~(got by stores) store-id.action)
-      :-  ~
+      :_
       %=  state
         stores
         %+  ~(put by stores)  id.s
@@ -135,12 +175,16 @@
             stewards=stewards.s
         ==
       ==
+      :~  :*  %give  %fact  ~[/updates]  %plug-update
+              !>(`update`action)
+          ==
+      ==
     ::
         %delete-product
       ?>  (~(has by stores) store-id.action)
       =/  s  `store`(~(got by stores) store-id.action)
       ?>  (has:catalog-orm catalog.s product-id.action)
-      :-  ~
+      :_
       %=  state
         stores
         %+  ~(put by stores)  id.s
@@ -151,6 +195,10 @@
             +:(del:catalog-orm catalog.s product-id.action)
             stewards=stewards.s
         ==
+      ==
+      :~  :*  %give  %fact  ~[/updates]  %plug-update
+              !>(`update`action)
+          ==
       ==
     ::
   ==

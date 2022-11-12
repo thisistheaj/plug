@@ -32,10 +32,10 @@
 ::
 +$  update
   $%  [%initial =stores]
-      [%create-store =id =title]
+      [%create-store =id =title =description avatar=image]
       [%update-store =id =title =description avatar=image]
       [%delete-store =id]
-      [%create-product =id store-id=id =title =description =images =price]
+      [%create-product store-id=id product-id=id =title =description =images =price]
       [%update-product store-id=id product-id=id =title =description =images =price]
       [%delete-product store-id=id product-id=id]
   ==
