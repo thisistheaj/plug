@@ -7,6 +7,12 @@
 +$  state-0  [%0 =stores]
 +$  card  card:agent:gall
 ++  catalog-orm  ((on id product) gth)
+++  tell
+  |=  =update
+  :~  :*  %give  %fact  ~[/updates]  %plug-update
+        !>(update)
+      ==
+  ==
 ++  next-product-id
   |=  [c=catalog]
   ^-  @
@@ -78,15 +84,12 @@
             stewards=~
         ==
       ==
-      :~  :*  %give  %fact  ~[/updates]  %plug-update
-            !>  ^-  update
-            :-  -.action
-            :*  id=n
-                title=title.action
-                description=~
-                avatar=~
-            ==
-          ==
+      %-  tell
+      :-  -.action
+      :*  id=n
+          title=title.action
+          description=~
+          avatar=~
       ==
     ::
         %update-store
@@ -104,18 +107,12 @@
             stewards=stewards.s
         ==
       ==
-      :~  :*  %give  %fact  ~[/updates]  %plug-update
-              !>(`update`action)
-          ==
-      ==
+      (tell action)
     ::
         %delete-store
       ?>  (~(has by stores) id.action)
       :_  state(stores (~(del by stores) id.action))
-      :~  :*  %give  %fact  ~[/updates]  %plug-update
-              !>(`update`action)
-          ==
-      ==
+      (tell action)
     ::
         %create-product
       ?>  (~(has by stores) store-id.action)
@@ -139,18 +136,15 @@
             ==
             stewards=stewards.s
         ==
-      == 
-      :~  :*  %give  %fact  ~[/updates]  %plug-update
-        !>  ^-  update
-          :-  -.action
-            :*  store-id=store-id.action
-                product-id=n
-                title=title.action
-                description=description.action
-                images=images.action
-                price=price.action
-            ==
-        ==
+      ==
+      %-  tell
+      :-  -.action
+      :*  store-id=store-id.action
+          product-id=n
+          title=title.action
+          description=description.action
+          images=images.action
+          price=price.action
       ==
     ::
         %update-product
@@ -175,10 +169,7 @@
             stewards=stewards.s
         ==
       ==
-      :~  :*  %give  %fact  ~[/updates]  %plug-update
-              !>(`update`action)
-          ==
-      ==
+      (tell action)
     ::
         %delete-product
       ?>  (~(has by stores) store-id.action)
@@ -196,10 +187,7 @@
             stewards=stewards.s
         ==
       ==
-      :~  :*  %give  %fact  ~[/updates]  %plug-update
-              !>(`update`action)
-          ==
-      ==
+      (tell action)
     ::
   ==
 --
@@ -212,8 +200,7 @@
     ::  only allow other agents on this ship for now
     ?>  =(src.bowl our.bowl)
     :_  this
-    :~  [%give %fact ~ %plug-update !>(`update`initial+stores)]
-    ==
+    :~([%give %fact ~ %plug-update !>(`update`initial+stores)])
   ==
 ::
 ++  on-leave  on-leave:def
