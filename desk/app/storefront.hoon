@@ -87,22 +87,94 @@
   ==
   ++  handle-update
     |=  =update
-    ?+    -.update
-        ~&  update
-        `this
-      %initial
-        %-  hear
-        +.update
-      %create-store
-        %-  hear
-        %+  ~(put by stores)  id.update
-        :*  id=id.update
-            title=title.update
-            description=description.update
-            avatar=avatar.update
-            catalog=~
-            stewards=~
-        ==
+    ?-    -.update
+    ::
+        %initial
+      %-  hear
+      +.update
+    ::
+        %create-store
+      %-  hear
+      %+  ~(put by stores)  id.update
+      :*  id=id.update
+          title=title.update
+          description=description.update
+          avatar=avatar.update
+          catalog=~
+          stewards=~
+      ==
+    ::
+        %update-store
+      ?>  (~(has by stores) id.update)
+      =/  s  `store`(~(got by stores) id.update)
+      %-  hear
+      %+  ~(put by stores)  id.update
+      :*  id=id.update
+          title=title.update
+          description=description.update
+          avatar=avatar.update
+          catalog=catalog.s
+          stewards=stewards.s
+      ==
+    ::
+        %delete-store
+      ?>  (~(has by stores) id.update)
+      (hear (~(del by stores) id.update))
+    ::
+        %create-product
+      ?>  (~(has by stores) store-id.update)
+      =/  s  `store`(~(got by stores) store-id.update)
+      %-  hear
+      %+  ~(put by stores)  id.s
+      :*  id=id.s
+          title=title.s
+          description=description.s
+          avatar=avatar.s
+          %^  put:catalog-orm  catalog.s  product-id.update
+          %-  product
+          :*  id=product-id.update
+              title=title.update
+              description=description.update
+              images=images.update
+              price=price.update
+          ==
+          stewards=stewards.s
+      ==
+    ::
+        %update-product
+      ?>  (~(has by stores) store-id.update)
+      =/  s  `store`(~(got by stores) store-id.update)
+      %-  hear
+      %+  ~(put by stores)  id.s
+      :*  id=id.s
+          title=title.s
+          description=description.s
+          avatar=avatar.s
+          %^  put:catalog-orm  catalog.s  product-id.update
+          %-  product
+          :*  id=product-id.update
+              title=title.update
+              description=description.update
+              images=images.update
+              price=price.update
+          ==
+          stewards=stewards.s
+      ==
+    ::
+        %delete-product
+      ?>  (~(has by stores) store-id.update)
+      =/  s  `store`(~(got by stores) store-id.update)
+      ?>  (has:catalog-orm catalog.s product-id.update)
+      %-  hear
+      %+  ~(put by stores)  id.s
+      :*  id=id.s
+          title=title.s
+          description=description.s
+          avatar=avatar.s
+          +:(del:catalog-orm catalog.s product-id.update)
+          stewards=stewards.s
+      ==
+    ::
     ==
   ++  hear
     |=  stores=$_(+.state)
