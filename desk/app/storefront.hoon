@@ -63,6 +63,7 @@
 ++  on-agent
   |=  [=wire =sign:agent:gall]
   ^-  (quip card _this)
+  |^
   ?+    wire  (on-agent:def wire sign)
       [%stores ~]
     ?+    -.sign  (on-agent:def wire sign)
@@ -80,11 +81,38 @@
         %fact
       ?+    p.cage.sign  (on-agent:def wire sign)
           %plug-update
-        ~&  !<(update q.cage.sign)
-        `this
+        (handle-update !<(update q.cage.sign))
       ==
     ==
   ==
+  ++  handle-update
+    |=  =update
+    ?+    -.update
+        ~&  update
+        `this
+      %initial
+        %-  hear
+        +.update
+      %create-store
+        %-  hear
+        %+  ~(put by stores)  id.update
+        :*  id=id.update
+            title=title.update
+            description=description.update
+            avatar=avatar.update
+            catalog=~
+            stewards=~
+        ==
+    ==
+  ++  hear
+    |=  stores=$_(+.state)
+    :-  ~  
+    %=  this  state
+      %=  state  stores
+        stores
+      ==
+    ==
+  --
 ::
 ++  on-arvo   on-arvo:def
 ++  on-fail   on-fail:def
