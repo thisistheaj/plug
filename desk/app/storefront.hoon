@@ -1,5 +1,6 @@
 /-  *plug
-/+  default-agent, dbug
+/+  default-agent, dbug, agentio
+/=  index  /app/store/index
 |%
 +$  versioned-state
   $%  state-0
@@ -15,13 +16,16 @@
 |_  =bowl:gall
 +*  this  .
     def   ~(. (default-agent this %.n) bowl)
+    io    ~(. agentio bowl)
 ::
 ++  on-init
   ^-  (quip card _this)
-  :-  ~
+  :_
   %=  this
     stores  ~
   ==
+  ~[(~(arvo pass:io /bind) %e %connect `/'stores' %storefront)]
+  ::[%pass /bind %arvo %e %connect `/'stores' %storefront]~
 ::
 ++  on-save
   ^-  vase
@@ -37,24 +41,87 @@
 ::
 ++  on-poke
   |=  [=mark =vase]
-  ^-  (quip card _this)
-  ::  todo: update for more nuanced check when writing permissioning
-  ::
+  |^  ^-  (quip card _this)
   ?>  =(src.bowl our.bowl)
-  ?+    mark  (on-poke:def mark vase)
-      %noun
-    =/  action  !<(?(%sub %unsub) vase)
-    ?-    action
+  =^  cards  state
+    ?+  mark  (on-poke:def mark vase)
+      %handle-http-request  (handle-http !<([@ta inbound-request:eyre] vase))
+      %noun                 (toggle-sub !<(?(%sub %unsub) vase))
+    ==
+  [cards this]
+  ++  toggle-sub
+    |=  action=?(%sub %unsub)
+    ^-  (quip card _state)
+    ?-  action
         %sub
-      :_  this
+      :_  state
       :~  [%pass /stores %agent [our.bowl %plug] %watch /updates]
       ==
         %unsub
-      :_  this
+      :_  state
       :~  [%pass /stores %agent [our.bowl %plug] %leave ~]
       ==
     ==
-  ==
+  ++  handle-http
+    |=  [rid=@ta req=inbound-request:eyre]
+    ^-  (quip card _state)
+    :: if the request doesn't contain a valid session cookie
+    :: obtained by logging in to landscape with the web logic
+    :: code, we just redirect them to the login page
+    ::
+    ::?.  authenticated.req
+    ::  :_  state
+    ::  (give-http rid [307 ['Location' '/~/login?redirect='] ~] ~)
+    :: if it's authenticated, we test whether it's a GET or
+    :: POST request.
+    ::
+    ~&  [mark req]
+    ?+  method.request.req
+      :: if it's neither, we give a method not allowed error.
+      ::
+      :_  state
+      %^    give-http
+          rid
+        :-  405
+        :~  ['Content-Type' 'text/html']
+            ['Content-Length' '31']
+            ['Allow' 'GET, POST']
+        ==
+      (some (as-octs:mimes:html '<h1>405 Method Not Allowed</h1>'))
+    :: if it's a get request, we call our index.hoon file
+    :: with the current app state to generate the HTML and
+    :: return it. (we'll write that file in the next section)
+    ::
+        %'GET'
+      :_  state
+      (make-200 rid (index bowl stores))
+    ::
+    ==
+  :: this function makes a status 200 success response.
+  :: It's used to serve the index page.
+  ::
+  ++  make-200
+    |=  [rid=@ta dat=octs]
+    ^-  (list card)
+    %^    give-http
+        rid
+      :-  200
+      :~  ['Content-Type' 'text/html']
+          ['Content-Length' (crip ((d-co:co 1) p.dat))]
+      ==
+    [~ dat]
+  :: this function composes the underlying HTTP responses
+  :: to successfully complete and close the connection
+  ::
+  ++  give-http
+    |=  [rid=@ta hed=response-header:http dat=(unit octs)]
+    ^-  (list card)
+    :~  [%give %fact ~[/http-response/[rid]] %http-response-header !>(hed)]
+        [%give %fact ~[/http-response/[rid]] %http-response-data !>(dat)]
+        [%give %kick ~[/http-response/[rid]] ~]
+    ==
+  ::
+  --
 ::
 ++  on-watch  on-watch:def
 ++  on-leave  on-leave:def
@@ -186,6 +253,16 @@
     ==
   --
 ::
-++  on-arvo   on-arvo:def
+++  on-arvo
+  |=  [=wire =sign-arvo]
+  ^-  (quip card _this)
+  ?.  ?=([%bind ~] wire)
+    (on-arvo:def [wire sign-arvo])
+  ?>  ?=([%eyre %bound *] sign-arvo)
+  ?:  accepted.sign-arvo
+    %-  (slog leaf+"/stores bound successfully!" ~)
+    `this
+  %-  (slog leaf+"Binding /stores failed!" ~)
+  `this
 ++  on-fail   on-fail:def
 --
