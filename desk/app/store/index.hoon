@@ -13,6 +13,7 @@
   ==
   ;body
     ;h1: Hello World
+    ;p: Welcome to your Plug Storefront
   ==
 ==
 :: CSS STYLES

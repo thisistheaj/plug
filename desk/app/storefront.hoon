@@ -25,7 +25,6 @@
     stores  ~
   ==
   ~[(~(arvo pass:io /bind) %e %connect `/'stores' %storefront)]
-  ::[%pass /bind %arvo %e %connect `/'stores' %storefront]~
 ::
 ++  on-save
   ^-  vase
@@ -65,20 +64,7 @@
   ++  handle-http
     |=  [rid=@ta req=inbound-request:eyre]
     ^-  (quip card _state)
-    :: if the request doesn't contain a valid session cookie
-    :: obtained by logging in to landscape with the web logic
-    :: code, we just redirect them to the login page
-    ::
-    ::?.  authenticated.req
-    ::  :_  state
-    ::  (give-http rid [307 ['Location' '/~/login?redirect='] ~] ~)
-    :: if it's authenticated, we test whether it's a GET or
-    :: POST request.
-    ::
-    ~&  [mark req]
     ?+  method.request.req
-      :: if it's neither, we give a method not allowed error.
-      ::
       :_  state
       %^    give-http
           rid
@@ -88,18 +74,11 @@
             ['Allow' 'GET, POST']
         ==
       (some (as-octs:mimes:html '<h1>405 Method Not Allowed</h1>'))
-    :: if it's a get request, we call our index.hoon file
-    :: with the current app state to generate the HTML and
-    :: return it. (we'll write that file in the next section)
-    ::
         %'GET'
       :_  state
       (make-200 rid (index bowl stores))
     ::
     ==
-  :: this function makes a status 200 success response.
-  :: It's used to serve the index page.
-  ::
   ++  make-200
     |=  [rid=@ta dat=octs]
     ^-  (list card)
@@ -110,9 +89,6 @@
           ['Content-Length' (crip ((d-co:co 1) p.dat))]
       ==
     [~ dat]
-  :: this function composes the underlying HTTP responses
-  :: to successfully complete and close the connection
-  ::
   ++  give-http
     |=  [rid=@ta hed=response-header:http dat=(unit octs)]
     ^-  (list card)
@@ -123,7 +99,16 @@
   ::
   --
 ::
-++  on-watch  on-watch:def
+++  on-watch
+  |=  =path
+  ^-  (quip card _this)
+  ?+    path
+    (on-watch:def path)
+  ::
+      [%http-response *]
+    %-  (slog leaf+"Eyre subscribed to {(spud path)}." ~)
+    `this
+  ==
 ++  on-leave  on-leave:def
 ++  on-peek   on-peek:def
 ::
@@ -243,6 +228,10 @@
       ==
     ::
     ==
+  :: hear:
+  :: 
+  :: Standard way listen to 'tell' events from PIM agent
+  ::
   ++  hear
     |=  stores=$_(+.state)
     :-  ~  
