@@ -1,12 +1,19 @@
+::  global imports
+::
 /-  *plug
-/=  styles  /app/pages/styles
+::  sail imports
+::
+/=  styles  /app/components/styles
+/=  page-content  /app/components/page-content
+::  store page component (index)
+::
 |=  [=bowl:gall =stores]
 |^  ^-  octs
 %-  as-octs:mimes:html
 %-  crip
 %-  en-xml:html
 ^-  manx
-:: HTML PAGE
+:: Sail Page
 ::
 ;html
   ;head
@@ -67,19 +74,4 @@
     ;h4.product-title: {title.product}
     ;button.pure-button.view-product-button: View
   ==
-:: Shared components
-::
-++  page-content
-  |=  content=manx
-  ^-  manx
-    ;div.pure-g
-      ;div.pure-u-1-12.mobile-hide;
-      ;div.pure-u-5-6.mobile-hide
-        ;+  content
-      ==         
-      ;div.pure-u-5-6.desktop-hide
-        ;+  content
-      ==         
-      ;div.pure-u-1-12.mobile-hide;          
-    ==
 --
