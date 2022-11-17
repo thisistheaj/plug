@@ -40,11 +40,10 @@
       ;+  (store-hero store)
       ;h2: Products
       ;div.product-grid
-        ;+  product-card
-        ;+  product-card
-        ;+  product-card
-        ;+  product-card
-        ;+  product-card
+        ;*  %+  turn  
+          ~(tap by catalog.store)
+          |=  product-pair=[id product]
+          (product-card (tail product-pair))
       ==
     ==
   --
@@ -86,10 +85,12 @@
     ==
   ==
 ++  product-card
+  |=  =product
+  ~&  product
   ^-  manx
   ;div.product-card
-    =style  "background-image: url('http://random.imagecdn.app/360/360')"
-    ;h4.product-title: First Product
+    =style  "background-image: url('{(rear (flop images.product))}')"
+    ;h4.product-title: {title.product}
     ;button.pure-button.view-product-button: View
   ==
 ++  style
