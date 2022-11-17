@@ -80,19 +80,16 @@
       (some (as-octs:mimes:html '<h1>405 Method Not Allowed</h1>'))
         %'GET'
       =/  path  url.request.req
+      =/  s  (tail (rear (flop ~(tap by stores))))
+      :_  state
       ?:  (starts-with '/store' path)
-        :_  state
         (make-200 rid (store-page bowl stores))
       ?:  (starts-with '/product-detail' path)
-        =/  s  (tail (rear (flop ~(tap by stores))))
         =/  product-id  (get-id '/product-detail' path)
-        ~&  catalog.s
         ?.  (has:catalog-orm catalog.s product-id)
-          :_  state
           (make-404 rid)
-        :_  state
-        (make-200 rid (product-page bowl stores))
-      :_  state
+        =/  product  (got:catalog-orm catalog.s product-id)
+        (make-200 rid (product-page bowl s product))
       (make-404 rid)
     ::
     ==
