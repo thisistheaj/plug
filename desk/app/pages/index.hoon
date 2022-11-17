@@ -1,13 +1,13 @@
 ::  global imports
 ::
-/-  *plug
+/-  plug
 ::  sail imports
 ::
 /=  styles  /app/components/styles
 /=  page-content  /app/components/page-content
 ::  store page component (index)
 ::
-|=  [=bowl:gall =stores]
+|=  [=bowl:gall store=store:plug]
 |^  ^-  octs
 %-  as-octs:mimes:html
 %-  crip
@@ -34,7 +34,6 @@
 ==
 ++  store-page
   ^-  manx
-  =/  store  (tail (rear (flop ~(tap by stores))))
   |^
   ;div
     ;+  (page-content content)
@@ -42,18 +41,17 @@
   ++  content
     ^-  manx
     ;div
-      ;+  (store-hero store)
+      ;+  store-hero
       ;h2: Products
       ;div.product-grid
         ;*  %+  turn  
           ~(tap by catalog.store)
-          |=  product-pair=[id product]
+          |=  product-pair=[id:plug product:plug]
           (product-card (tail product-pair))
       ==
     ==
   --
 ++  store-hero
-  |=  =store
   ^-  manx
   ;div.preview-hero
     ;div.hero-avatar
@@ -67,7 +65,7 @@
     ==
   ==
 ++  product-card
-  |=  =product
+  |=  product=product:plug
   ^-  manx
   ;div.product-card
     =style  "background-image: url('{(rear (flop images.product))}')"

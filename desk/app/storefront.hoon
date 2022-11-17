@@ -83,7 +83,7 @@
       =/  s  (tail (rear (flop ~(tap by stores))))
       :_  state
       ?:  (starts-with '/store' path)
-        (make-200 rid (store-page bowl stores))
+        (make-200 rid (store-page bowl s))
       ?:  (starts-with '/product-detail' path)
         =/  product-id  (get-id '/product-detail' path)
         ?.  (has:catalog-orm catalog.s product-id)
