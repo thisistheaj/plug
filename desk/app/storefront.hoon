@@ -1,6 +1,7 @@
 /-  *plug
 /+  default-agent, dbug, agentio
-/=  index  /app/store/index
+/=  store-page  /app/pages/index
+/=  product-page  /app/pages/product
 |%
 +$  versioned-state
   $%  state-0
@@ -24,7 +25,10 @@
   %=  this
     stores  ~
   ==
-  ~[(~(arvo pass:io /bind) %e %connect `/'stores' %storefront)]
+  :~
+    (~(arvo pass:io /bind) %e %connect `/'store' %storefront)
+    (~(arvo pass:io /bind) %e %connect `/'product-detail' %storefront)
+  ==
 ::
 ++  on-save
   ^-  vase
@@ -75,16 +79,59 @@
         ==
       (some (as-octs:mimes:html '<h1>405 Method Not Allowed</h1>'))
         %'GET'
+      =/  path  url.request.req
+      ?:  (starts-with '/store' path)
+        :_  state
+        (make-200 rid (store-page bowl stores))
+      ?:  (starts-with '/product-detail' path)
+        =/  s  (tail (rear (flop ~(tap by stores))))
+        =/  product-id  (get-id '/product-detail' path)
+        ~&  catalog.s
+        ?.  (has:catalog-orm catalog.s product-id)
+          :_  state
+          (make-404 rid)
+        :_  state
+        (make-200 rid (product-page bowl stores))
       :_  state
-      (make-200 rid (index bowl stores))
+      (make-404 rid)
     ::
     ==
+  ++  starts-with 
+    |=  [route=cord path=cord]
+    =/  r  (trip route)
+    =/  p  (trip path)
+    =/  beginning  (head (trim (lent r) p))
+    =(r beginning)
+  ++  get-id
+    |=  [route=cord path=cord]
+    ^-  @ud
+    =/  r  (trip route)
+    =/  p  (trip path)
+    %-  parse-int
+    :: Remove '/' from front
+    %-  tail  %+  trim  1
+    :: get remaining path
+    (tail (trim (lent r) p))
+  ++  parse-int
+    |=  t=tape
+    (scan t dim:ag)
   ++  make-200
     |=  [rid=@ta dat=octs]
     ^-  (list card)
     %^    give-http
         rid
       :-  200
+      :~  ['Content-Type' 'text/html']
+          ['Content-Length' (crip ((d-co:co 1) p.dat))]
+      ==
+    [~ dat]
+  ++  make-404
+    |=  rid=@ta
+    =/  dat   (as-octs:mimes:html '<h1>404 Not Found</h1>')
+    ^-  (list card)
+    %^    give-http
+        rid
+      :-  404
       :~  ['Content-Type' 'text/html']
           ['Content-Length' (crip ((d-co:co 1) p.dat))]
       ==
@@ -248,10 +295,12 @@
   ?.  ?=([%bind ~] wire)
     (on-arvo:def [wire sign-arvo])
   ?>  ?=([%eyre %bound *] sign-arvo)
+  ::  does not print correctly without this for some reason
+  =/  path  (trip (crip path.binding.sign-arvo))
   ?:  accepted.sign-arvo
-    %-  (slog leaf+"/stores bound successfully!" ~)
+    %-  (slog leaf+"/{path} bound successfully!" ~)
     `this
-  %-  (slog leaf+"Binding /stores failed!" ~)
+  %-  (slog leaf+"Binding /{path} failed!" ~)
   `this
 ++  on-fail   on-fail:def
 --

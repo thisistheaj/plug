@@ -29,7 +29,6 @@
 ++  store-page
   ^-  manx
   =/  store  (tail (rear (flop ~(tap by stores))))
-  ~&  store
   |^
   ;div
     ;+  (page-content content)
@@ -86,7 +85,6 @@
   ==
 ++  product-card
   |=  =product
-  ~&  product
   ^-  manx
   ;div.product-card
     =style  "background-image: url('{(rear (flop images.product))}')"
