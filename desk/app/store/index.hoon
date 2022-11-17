@@ -28,6 +28,8 @@
 ::
 ++  store-page
   ^-  manx
+  =/  store  (tail (rear (flop ~(tap by stores))))
+  ~&  store
   |^
   ;div
     ;+  (page-content content)
@@ -35,7 +37,7 @@
   ++  content
     ^-  manx
     ;div
-      ;+  store-hero
+      ;+  (store-hero store)
       ;h2: Products
       ;div.product-grid
         ;+  product-card
@@ -60,15 +62,16 @@
       ;div.pure-u-1-12.mobile-hide;          
     ==
 ++  store-hero
+  |=  =store
   ^-  manx
   ;div.preview-hero
     ;div.hero-avatar
-      ;img@"http://random.imagecdn.app/150/150";
+      ;img(src avatar.store);
     ==
     ;div.preview-hero-content
-      ;h1: AJs Cool Store
+      ;h1: {title.store}
       ;div.store-about-us
-        We are a cool Store where you can buy things
+        ;p: {description.store}
       ==
     ==
   ==
