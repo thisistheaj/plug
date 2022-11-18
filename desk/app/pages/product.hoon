@@ -42,9 +42,57 @@
     ^-  manx
     ;div
       ;+  store-header
+      ;div.product-wrapper
+        ;div.product-content.preview-mobile-title
+          ;h1: {title.product}
+        ==
+        ;div.product-images-slider
+          ;*  %+  turn  
+            images.product
+            |=  image=tape
+            ^-  manx
+            ;img(src image);
+        ==
+        ;div.product-content
+          ;h1: {title.product}
+          {description.product}
+          ;h3
+            ;+  ;/  "${(price price.product)}"
+          ==
+          ;button.pure-button.pure-button-primary
+            ; Add To Cart
+          ==
+        ==
+      ==
     ==
+  ++  price
+    |=  n=@ud
+    ^-  tape
+    |^
+    (insert-decimal (strip-dots (ud-to-tape n)))
+    ++  insert-decimal
+      |=  t=tape
+      ^-  tape
+      ?:  (gth (lent t) 2)
+        `tape`(into t (sub (lent t) 2) '.')
+      ?:  (gth (lent t) 1)
+        "0.{t}"
+      ?:  (gth (lent t) 0)
+        "0.0{t}"
+      "0.00"
+    ++  strip-dots
+      |=  t=tape
+      ^-  tape
+      %-  tail  
+      %+  skid  
+        t  
+      |=(c=cord =(c '.'))
+    ++  ud-to-tape
+      |=  m=@ud
+      ^-  tape
+      "{<n>}"
+    --
   --
-
 ++  store-header
   ^-  manx
   ;div.preview-header
