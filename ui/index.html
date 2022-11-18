@@ -190,7 +190,7 @@
               ${this.PageContent(`
                 <div class="page-content">
                   <h2>Welcome to Plug &#128268;</h2>
-                  ${this.PreviewButton()}
+                  ${this.ViewStoreButton()}
                   ${this.ProductTable()}
                   ${this.OrdersTable()}
                 </div>
@@ -583,6 +583,13 @@
             <button class="pure-button" onclick="window.app.navigate('store-preview')">
               Preview Store
             </button>
+          `
+        },
+        ViewStoreButton () {
+          return `
+            <a class="pure-button" href="/stores/${this.currentStore.id}">
+              View Store
+            </a>
           `
         },
         EndPreviewButton () {
