@@ -26,8 +26,7 @@
     stores  ~
   ==
   :~
-    (~(arvo pass:io /bind) %e %connect `/'store' %storefront)
-    (~(arvo pass:io /bind) %e %connect `/'product-detail' %storefront)
+    (~(arvo pass:io /bind) %e %connect `/'stores' %storefront)
   ==
 ::
 ++  on-save
@@ -69,46 +68,72 @@
     |=  [rid=@ta req=inbound-request:eyre]
     ^-  (quip card _state)
     ?+  method.request.req
+      ::  Error by default on other Request types
+      ::
       :_  state
-      %^    give-http
-          rid
-        :-  405
-        :~  ['Content-Type' 'text/html']
-            ['Content-Length' '31']
-            ['Allow' 'GET, POST']
-        ==
-      (some (as-octs:mimes:html '<h1>405 Method Not Allowed</h1>'))
+      (make-405 rid)
+      :: Run Router on GET requests 
+      ::
         %'GET'
       =/  path  url.request.req
-      =/  s  (tail (rear (flop ~(tap by stores))))
       :_  state
-      ?:  (starts-with '/store' path)
-        (make-200 rid (store-page bowl s))
-      ?:  (starts-with '/product-detail' path)
-        =/  product-id  (get-id '/product-detail' path)
-        ?.  (has:catalog-orm catalog.s product-id)
-          (make-404 rid)
-        =/  product  (got:catalog-orm catalog.s product-id)
-        (make-200 rid (product-page bowl s product))
-      (make-404 rid)
+      (router rid path)
     ::
     ==
-  ++  starts-with 
-    |=  [route=cord path=cord]
-    =/  r  (trip route)
-    =/  p  (trip path)
-    =/  beginning  (head (trim (lent r) p))
-    =(r beginning)
-  ++  get-id
-    |=  [route=cord path=cord]
-    ^-  @ud
-    =/  r  (trip route)
-    =/  p  (trip path)
-    %-  parse-int
-    :: Remove '/' from front
-    %-  tail  %+  trim  1
-    :: get remaining path
-    (tail (trim (lent r) p))
+  ++  router
+    |=  [rid=@ta path=cord]
+    =/  p  (parse-next-path path)
+    ::  404 if it doesn't go to a store
+    ::
+    ?.  =('stores' front.p)
+      (make-404 rid)
+    ::  404 if the selected store does not exist
+    ::
+    =/  p  (parse-next-path back.p)
+    =/  store-id  (parse-id front.p)
+    ?.  (~(has by stores) store-id)
+      (make-404 rid)
+    ::  return the homepage if the path ends
+    ::  at an existing store
+    ::
+    =/  s  (~(got by stores) store-id)
+    ?:  =('' back.p)
+      (make-200 rid (store-page bowl s))
+    ::  404 if additional path does not go to a product
+    ::
+    =/  p  (parse-next-path back.p)
+    ?.  =('products' front.p)
+      (make-404 rid)
+    ::  404 if the selected product does not exist
+    ::
+    =/  p  (parse-next-path back.p)
+    =/  product-id  (parse-id front.p)
+    ?.  (has:catalog-orm catalog.s product-id)
+      (make-404 rid)
+    ::  return the product detail page
+    ::  if the path ends at an existing product
+    ::
+    =/  product  (got:catalog-orm catalog.s product-id)
+    (make-200 rid (product-page bowl s product))
+  ++  parse-next-path
+    |=  path=cord
+    ::  convert to tape and remove opening '/'
+    =/  path  (tail (trim 1 (trip path)))
+    =/  trio
+    %+  roll  path      
+    :: for the rest of the tape
+    :: accumulate each letter by slamming a gate
+    :: stop once you get to the next '/'
+    |=  [char=@t acc=[front=tape back=tape incomplete=?]]
+      ?:  =(incomplete.acc %.n)
+        [front.acc (weld back.acc (trip char)) %.n]
+      ?.  =(char '/')
+        [(weld front.acc (trip char)) back.acc %.y]
+      [front.acc (weld back.acc (trip char)) %.n]
+    [front=(crip front.trio) back=(crip back.trio)]
+  ++  parse-id
+    |=  c=cord
+    (parse-int (trip c))
   ++  parse-int
     |=  t=tape
     (scan t dim:ag)
@@ -129,6 +154,17 @@
     %^    give-http
         rid
       :-  404
+      :~  ['Content-Type' 'text/html']
+          ['Content-Length' (crip ((d-co:co 1) p.dat))]
+      ==
+    [~ dat]
+  ++  make-405
+    |=  rid=@ta
+    =/  dat   (as-octs:mimes:html '<h1>405 Method Not Allowed</h1>')
+    ^-  (list card)
+    %^    give-http
+        rid
+      :-  405
       :~  ['Content-Type' 'text/html']
           ['Content-Length' (crip ((d-co:co 1) p.dat))]
       ==

@@ -70,6 +70,8 @@
   ;div.product-card
     =style  "background-image: url('{(rear (flop images.product))}')"
     ;h4.product-title: {title.product}
-    ;button.pure-button.view-product-button: View
+    ;a.pure-button.view-product-button(href "/stores/{<id.store>}/products/{<id.product>}")
+      ; View
+    ==
   ==
 --
