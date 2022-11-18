@@ -55,7 +55,8 @@
   ^-  manx
   ;div.preview-hero
     ;div.hero-avatar
-      ;img(src avatar.store);
+      ;img
+        =src  (image avatar.store);
     ==
     ;div.preview-hero-content
       ;h1: {title.store}
@@ -74,4 +75,9 @@
       ; View
     ==
   ==
+++  image
+  |=  image=tape
+  ?:  =(image "")
+    "https://www.alphafa.com/wp-content/uploads/2018/09/placeholder-square.jpg"
+  image
 --

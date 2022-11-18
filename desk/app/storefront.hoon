@@ -27,6 +27,7 @@
   ==
   :~
     (~(arvo pass:io /bind) %e %connect `/'stores' %storefront)
+    [%pass /stores %agent [our.bowl %plug] %watch /updates]
   ==
 ::
 ++  on-save
