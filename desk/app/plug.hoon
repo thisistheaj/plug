@@ -82,6 +82,7 @@
             avatar=~
             catalog=~
             stewards=~
+            api-key=~
         ==
       ==
       %-  tell
@@ -105,6 +106,7 @@
             avatar=avatar.action
             catalog=catalog.s
             stewards=stewards.s
+            api-key=api-key.action
         ==
       ==
       (tell action)
@@ -135,6 +137,7 @@
                 price=price.action
             ==
             stewards=stewards.s
+            api-key=api-key.s
         ==
       ==
       %-  tell
@@ -167,6 +170,7 @@
                 price=price.action
             ==
             stewards=stewards.s
+            api-key=api-key.s
         ==
       ==
       (tell action)
@@ -185,6 +189,7 @@
             avatar=avatar.s
             +:(del:catalog-orm catalog.s product-id.action)
             stewards=stewards.s
+            api-key=api-key.s
         ==
       ==
       (tell action)

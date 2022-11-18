@@ -234,6 +234,7 @@
           avatar=avatar.update
           catalog=~
           stewards=~
+          api-key=~
       ==
     ::
         %update-store
@@ -247,6 +248,7 @@
           avatar=avatar.update
           catalog=catalog.s
           stewards=stewards.s
+          api-key=api-key.update
       ==
     ::
         %delete-store
@@ -271,6 +273,7 @@
               price=price.update
           ==
           stewards=stewards.s
+          api-key=api-key.s
       ==
     ::
         %update-product
@@ -291,6 +294,7 @@
               price=price.update
           ==
           stewards=stewards.s
+          api-key=api-key.s
       ==
     ::
         %delete-product
@@ -305,6 +309,7 @@
           avatar=avatar.s
           +:(del:catalog-orm catalog.s product-id.update)
           stewards=stewards.s
+          api-key=api-key.s
       ==
     ::
     ==

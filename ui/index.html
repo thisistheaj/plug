@@ -492,6 +492,10 @@
                     <textarea id="store-description" placeholder="What do you want to tell customers on your main page?">${store.description ? store.description : ''}</textarea>
                   </div>
                 ` :''}
+                <div class="pure-control-group">
+                  <label for="store-description">SnipCart API Key (<a href="https://snipcart.com/">get a key =></a>)</label>
+                  <input type="text" ${store['api-key'] ? `value="${store['api-key']}"` : ''}id="store-api-key" placeholder="YOUR_API_KEY" />
+                </div>
                 ${button}
                 ${deleteButton ? this.DeleteStoreButton() : ''}
               </fieldset>
@@ -668,7 +672,8 @@
           const title = document.getElementById('store-title').value
           const description = document.getElementById('store-description').value
           const avatar = document.querySelector('#store-image img').src
-          await this.agent.updateStore(this.currentStore.id, title, description, avatar)
+          const api_key = document.getElementById('store-api-key').value
+          await this.agent.updateStore(this.currentStore.id, title, description, avatar, api_key)
           this.changeStore(this.currentStore.id)
         },
         async deleteStore () {
@@ -823,19 +828,20 @@
             await this.refreshState()
           }
         },
-        updateStore: async function (id, title, description, avatar) {
+        updateStore: async function (id, title, description, avatar, api_key) {
           if (this._mock) {            
             const store = { id, store: {
               id,
               title,
               description,
               avatar,
+              api_key
             }}
             this.stores = this.stores.filter(store => store.id != id)
             this.stores.push(store)
             this.currentStore = store
           } else {
-            await this._poke('update-store', { id, title, description, avatar })
+            await this._poke('update-store', { id, title, description, avatar, 'api-key': api_key })
             await this.refreshState()
           }
         },

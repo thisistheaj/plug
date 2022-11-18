@@ -22,7 +22,7 @@
     ;link/"https://cdn.jsdelivr.net/npm/purecss@2.1.0/build/pure-min.css"(rel "stylesheet", crossorigin "anonymous", integrity "sha384-yHIFVG6ClnONEA5yB5DJXfW2/KC173DIQrYoZMEtBvGzmf0PKiGyNEqe9N6BNDBH");
     ;meta(charset "utf-8");
     ;style: {styles}
-    ;script: {(snipcart "YOUR_API_KEY")}
+    ;script: {(snipcart api-key.store)}
     ;meta
       =name  "viewport"
       =content  "width=device-width, initial-scale=1";

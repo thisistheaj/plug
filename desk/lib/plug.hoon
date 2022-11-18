@@ -7,7 +7,7 @@
   %.  jon
   %-  of
   :~  [%create-store (ot ~[title+sa])]
-      [%update-store (ot ~[id+ni title+sa description+sa avatar+sa])]
+      [%update-store (ot ~[id+ni title+sa description+sa avatar+sa api-key+sa])]
       [%delete-store (ot ~[id+ni])]
       [%create-product (ot ~[store-id+ni title+sa description+sa images+(ar sa) price+ni])]
       [%update-product (ot ~[store-id+ni product-id+ni title+sa description+sa images+(ar sa) price+ni])]
@@ -35,6 +35,7 @@
       ['title' (tape title.s)]
       ['description' (tape description.s)]
       ['avatar' (tape avatar.s)]
+      ['api-key' (tape api-key.s)]
   ==
 ::  encodes: catalog, tuples, product
 ::
