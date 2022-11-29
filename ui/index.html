@@ -222,6 +222,14 @@
             </div>
             `
         },
+        ImportProductsPage () {
+          return `
+            <div>
+              ${this.Header()}
+              ${this.PageContent(this.ImportProductsForm())}
+            </div>
+            `
+        },
         OrdersPage () {
           return `
             <div>
@@ -353,7 +361,12 @@
         ProductTable () {
           return `
             <div><h2>Products</h2></div>
-            <button class="pure-button pad-bottom" onclick="window.app.navigate('create-product')">Add New</button>
+            <button class="pure-button pad-bottom" onclick="window.app.navigate('create-product')">
+              Add New
+            </button>
+            <button class="pure-button pad-bottom" onclick="window.app.navigate('import-products')">
+              Import
+            </button>
             <div>
               ${(this.agent.catalog.length > 0) ? `
                 <table class="pure-table pure-table-bordered">
@@ -500,6 +513,29 @@
                 ${deleteButton ? this.DeleteStoreButton() : ''}
               </fieldset>
             </form>          `
+        },
+        // Import/Export Components
+        ImportProductsForm () {
+          return `
+            <form class="pure-form pure-form-stacked">
+              <fieldset>
+                <legend>
+                  Product Import Tool
+                </legend>
+                <p>To import many products at once, put them in an excel file like <a href="">this</a> and then copy and paste them below to upload</p>
+                <div class="pure-control-group">
+                  <label for="products-csv">Product Data:</label>
+                  <textarea id="products-csv" placeholder="Foo, bar, baz\nFoo, bar, baz"></textarea>
+                </div>
+                ${this.ImportProductsButton()}
+              </fieldset>
+            </form>
+          `
+        },
+        ImportProductsButton () {
+          return `
+            <button type="button" onclick="window.app.importProducts()" class="pure-button pure-button-primary">Import</button>
+          `
         },
         // Preview Components
         PreviewStoreHero (store) {
@@ -656,6 +692,9 @@
             case "new-store":
               pageHTML = this.NewStorePage()
               break;
+            case "import-products":
+              pageHTML = this.ImportProductsPage()
+              break;
             case "store-preview":
               pageHTML = this.StorePreviewPage()
               break;
@@ -674,6 +713,19 @@
           this.currentStore = this.agent.stores.filter(store => store.store.title == title)[0]
           this.changeStore(this.currentStore.id)
           this.navigate('dashboard')
+        },
+        async importProducts () {
+          const csvData = document.getElementById('products-csv').value
+          const is = ImportService()
+          let products = is.csvToJSON(csvData)
+          try {
+            products = is.validateRows(products)
+          } catch (err) {
+            console.error(err)
+          }
+          products = is.zipImages(products)
+          window.products = products
+          console.log(products)
         },
         async saveStore () {
           const title = document.getElementById('store-title').value
@@ -957,5 +1009,81 @@
       }, 1000)
     }
     main()
+
+    function ImportService () {
+      return {
+        csvToJSON (csvString) {
+          const matrix = csvString
+            .split('\n')
+            .map(item => item.split('\t'))
+
+          const header = ['id', ...matrix[0].slice(1)]
+          const body = matrix.slice(1)
+
+          const jsonData = body
+            .map(item => item
+              .reduce((obj, val, index) => ({
+                ...obj,
+                [header[index]]: val
+              }), {})
+            )
+          return jsonData
+        },
+        zipImages (dataframe) {
+          return dataframe
+            .reduce((db, next) => ({
+              ...db,
+              [next.id]: (next && next.price) ? {
+                ...next,
+                images: [next.images]
+              } : {
+                ...db[next.id],
+                images: [...db[next.id].images, next.images]
+              }
+            }), {})
+        },
+        validateRows (dataframe) {
+          const not = b => !b
+          const equal = (p, q) => JSON.stringify(p) === JSON.stringify(q)
+          const isBlank = obj => {
+            const row = Object.keys(obj).map(key => obj[key])
+            return equal(
+              row.reduce((acc, s) => acc += s, ''),
+              ''
+            )
+          }
+          // const first = dict => dict[Object.keys(dict)[0]]
+          // const mapDataframe = f => Object.keys(dataframe)
+          //   .reduce((dict, key) => ({
+          //     ...dict,
+          //     [key]: f(dataframe[key])
+          //   }),{})
+          // Filter blank rows
+          dataframe = dataframe.filter(row => not(isBlank(row)))
+          // filter blank columns
+          dataframe = dataframe.map(obj => {
+            delete obj[''];
+            return obj
+          })
+          window.dataframe = dataframe
+          
+          // get headers for checks
+          headers = Object.keys(dataframe[0])
+
+          // check headers are valid
+          const validHeaders = ['id', 'title', 'description', 'images', 'price']
+          if (not(equal(headers, validHeaders))) {
+            throw new Error (`Invalid headers: ${JSON.stringify(headers)}`)
+          }
+          // check that a row is either a new item or an image row
+          // const requiredProps = ['id']
+          // check that all image rows have a new item
+          // check that all image rows come 'after' their item row
+          // check that prices parse to double
+          // check that product ids parse to int
+          return dataframe
+        }
+      }
+    }
   </script>
 </html>
