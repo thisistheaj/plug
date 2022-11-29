@@ -1043,8 +1043,10 @@
             }), {})
         },
         validateRows (dataframe) {
+          // Logic utils
           const not = b => !b
           const equal = (p, q) => JSON.stringify(p) === JSON.stringify(q)
+          // Dataframe utils
           const isBlank = obj => {
             const row = Object.keys(obj).map(key => obj[key])
             return equal(
@@ -1052,6 +1054,12 @@
               ''
             )
           }
+          const filledColumns = obj => Object.keys(obj).filter(key => obj[key])
+          const isImageRow = obj => equal(filledColumns(obj), ['id','images'])
+          const isNewProductRow = obj => equal(
+            filledColumns(obj),
+            ['id', 'title','description','images','price']
+          )
           // const first = dict => dict[Object.keys(dict)[0]]
           // const mapDataframe = f => Object.keys(dataframe)
           //   .reduce((dict, key) => ({
@@ -1075,9 +1083,33 @@
           if (not(equal(headers, validHeaders))) {
             throw new Error (`Invalid headers: ${JSON.stringify(headers)}`)
           }
+
           // check that a row is either a new item or an image row
-          // const requiredProps = ['id']
+          dataframe.forEach(obj => {
+            if (not(
+              isImageRow(obj) || isNewProductRow(obj)
+            )) {
+              throw new Error (
+                `Invalid Columns filled in Row: ${JSON.stringify(obj)}`
+              )
+            }
+          })
+
           // check that all image rows have a new item
+          const hasNewProduct = id => dataframe
+            .filter(isNewProductRow)
+            .reduce((dict,obj) => ({
+              ...dict,
+              [obj.id]: true
+            }), {})[id]
+          dataframe.forEach (obj => {
+            if(isImageRow(obj)) {
+              if (not(hasNewProduct(obj.id))) {
+                throw new Error(`Image for product # ${obj.id} has no row with mathcing product`)
+              }
+            }
+          })
+          
           // check that all image rows come 'after' their item row
           // check that prices parse to double
           // check that product ids parse to int
