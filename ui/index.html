@@ -168,7 +168,10 @@
         .desktop-hide {
           display: unset;
         }
-      }    
+      }
+      .error-list-message {
+        color: red;
+      }  
     </style>
     <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
@@ -191,7 +194,7 @@
                 <div class="page-content">
                   <h2>Welcome to Plug &#128268;</h2>
                   ${this.ViewStoreButton()}
-                  ${this.ProductTable()}
+                  ${this.AllProductsTable()}
                   ${this.OrdersTable()}
                 </div>
               `)}
@@ -202,7 +205,7 @@
           return `
             <div>
               ${this.Header()}
-              ${this.PageContent(this.ProductTable())}
+              ${this.PageContent(this.AllProductsTable())}
             </div>
             `
         },
@@ -226,7 +229,11 @@
           return `
             <div>
               ${this.Header()}
-              ${this.PageContent(this.ImportProductsForm())}
+              ${this.PageContent(`
+                ${this.ImportProductsForm()}
+                ${this.ImportProductsErrors()}
+                ${this.ImportProductsPreview()}
+              `)}
             </div>
             `
         },
@@ -358,7 +365,7 @@
           `
         },
         // Product List Page Components
-        ProductTable () {
+        AllProductsTable () {
           return `
             <div><h2>Products</h2></div>
             <button class="pure-button pad-bottom" onclick="window.app.navigate('create-product')">
@@ -367,12 +374,22 @@
             <button class="pure-button pad-bottom" onclick="window.app.navigate('import-products')">
               Import
             </button>
+            ${this.ProductTable(
+              this.agent.catalog,
+              this.ProductTableDropDown()
+            )}
+          `
+        },
+        ProductTable (products, dropdown) {
+          return `
             <div>
-              ${(this.agent.catalog.length > 0) ? `
+              ${(products.length > 0) ? `
                 <table class="pure-table pure-table-bordered">
                   <thead>
                     <tr>
-                        <th>${this.ProductTableDropDown()}</th>
+                        ${dropdown ?
+                        `<th>${this.ProductTableDropDown()}</th>` :
+                        '<th></th>'}
                         <th>ID</th>
                         <th>Image</th>
                         <th>Name</th>
@@ -381,7 +398,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    ${this.agent.catalog.reduce((html, product) => html + this.ProductRow(product.product), '')}
+                    ${products.reduce((html, product) => html + this.ProductRow(product.product), '')}
                   </tbody>
                 </table>            
               ` : ''}
@@ -532,9 +549,32 @@
             </form>
           `
         },
+        ImportProductsErrors () {
+          return `
+            <div id="import-products-errors" class="hidden">
+              <h3>Error Getting Products</h3>
+              <p>The following issues with the sheet need to be fixed to proceed:<p> 
+              <ul id="error-list">
+              </ul>
+            </div>
+          `
+        },
+        ErrorListMessage (errorMessage) {
+          return `
+            <li class="error-list-message">
+              ${errorMessage}
+            </li>
+          `
+        },
         ImportProductsButton () {
           return `
             <button type="button" onclick="window.app.importProducts()" class="pure-button pure-button-primary">Import</button>
+          `
+        },
+        ImportProductsPreview () {
+          return `
+            <div id="import-products-preview" class="hidden">
+            </div>
           `
         },
         // Preview Components
@@ -716,16 +756,29 @@
         },
         async importProducts () {
           const csvData = document.getElementById('products-csv').value
+          this.clearCSV()
+          this.hideImportPreview()
           const is = ImportService()
-          let products = is.csvToJSON(csvData)
-          try {
-            products = is.validateRows(products)
-          } catch (err) {
-            console.error(err)
+          const rawProducts = is.csvToJSON(csvData)
+          const { hasErrors, errorList, productRows} = is.validateRows(rawProducts)
+          if (hasErrors) {
+            this.clearErrors()
+            errorList.forEach(err => this.pushError(err))
+            this.showErrorList()
+          } else {
+            this.hideErrorList()
+            const productsDataframe = is.zipImages(productRows)
+            // convert df into catalog, by restructuring
+            const products = Object.keys(productsDataframe)
+              .map(key => ({
+                id: productsDataframe[key].id,
+                product: productsDataframe[key]
+              }))
+            this.previewProducts(products)
+            this.showImportPreview()
+            window.products = products
+            console.log(products)
           }
-          products = is.zipImages(products)
-          window.products = products
-          console.log(products)
         },
         async saveStore () {
           const title = document.getElementById('store-title').value
@@ -821,6 +874,46 @@
           console.log(obj)
           return obj
         },
+        // Controller — Presentation
+        clearCSV () {
+          const el = document.getElementById('products-csv')
+          el.innerHTML = ''
+          el.value = ''
+        },
+        showErrorList () {
+          const el = document.getElementById('import-products-errors')
+          el.classList.remove('hidden')
+        },
+        hideErrorList () {
+          const el = document.getElementById('import-products-errors')
+          el.classList.add('hidden')
+        },
+        pushError (message) {
+          const el = document.getElementById('error-list')
+          el.innerHTML += this.ErrorListMessage(message)
+        },
+        clearErrors () {
+          const el = document.getElementById('error-list')
+          el.innerHTML = ''
+        },
+        showImportPreview () {
+          const el = document.getElementById('import-products-preview')
+          el.classList.remove('hidden')
+        },
+        hideImportPreview () {
+          const el = document.getElementById('import-products-preview')
+          el.classList.add('hidden')
+        },
+        previewProducts (products) {
+          const el = document.getElementById('import-products-preview')
+          console.log('products', products)
+          const html = this.ProductTable(products)
+          console.log('html', html)
+          el.innerHTML = `
+            ${this.ProductTable(products)}
+          `
+        },
+        // Controller — Logic
         validateProduct () {
           const title = document.getElementById("product-title").value
           const description = document.getElementById("product-description").value
@@ -851,7 +944,7 @@
 
     // Services (Model)
     function PlugAgent () {
-      const _mock = false
+      const _mock = true
       const api = _mock ? {} : new UrbitHttpApi.Urbit("")
       api.ship = window.ship;
       return {
@@ -1043,6 +1136,7 @@
             }), {})
         },
         validateRows (dataframe) {
+          const errorList = []
           // Logic utils
           const not = b => !b
           const equal = (p, q) => JSON.stringify(p) === JSON.stringify(q)
@@ -1060,6 +1154,7 @@
             filledColumns(obj),
             ['id', 'title','description','images','price']
           )
+          const weld = arr => arr.reduce((arr, item) => arr += `, ${item}`)
           // const first = dict => dict[Object.keys(dict)[0]]
           // const mapDataframe = f => Object.keys(dataframe)
           //   .reduce((dict, key) => ({
@@ -1073,7 +1168,6 @@
             delete obj[''];
             return obj
           })
-          window.dataframe = dataframe
           
           // get headers for checks
           headers = Object.keys(dataframe[0])
@@ -1081,7 +1175,7 @@
           // check headers are valid
           const validHeaders = ['id', 'title', 'description', 'images', 'price']
           if (not(equal(headers, validHeaders))) {
-            throw new Error (`Invalid headers: ${JSON.stringify(headers)}`)
+            errorList.push(`Invalid header: ${weld(headers)}`)
           }
 
           // check that a row is either a new item or an image row
@@ -1089,9 +1183,7 @@
             if (not(
               isImageRow(obj) || isNewProductRow(obj)
             )) {
-              throw new Error (
-                `Invalid Columns filled in Row: ${JSON.stringify(obj)}`
-              )
+              errorList.push(`Invalid Columns filled in Row: ${weld(obj)}`)
             }
           })
 
@@ -1105,15 +1197,35 @@
           dataframe.forEach (obj => {
             if(isImageRow(obj)) {
               if (not(hasNewProduct(obj.id))) {
-                throw new Error(`Image for product # ${obj.id} has no row with mathcing product`)
+                errorList.push(`Image for product # ${obj.id} has no row with mathcing product`)
               }
             }
           })
-          
-          // check that all image rows come 'after' their item row
-          // check that prices parse to double
+
+          // rearrange rows so that all image rows come 'after' their item row
+          dataframe = [
+            ...dataframe.filter(isNewProductRow),
+            ...dataframe.filter(isImageRow)
+          ]
+
+          window.dataframe = dataframe
+
+          // check that prices parse to float
+          dataframe
+            .filter(isNewProductRow)
+            .map(obj => {
+              if (isNaN(parseFloat(obj.price))) {
+                errorList.push(`Invalid Price for Product #: ${obj.id}`)
+              }
+            })
           // check that product ids parse to int
-          return dataframe
+          dataframe
+            .map(obj => {
+              if (isNaN(parseFloat(obj.id))) {
+                errorList.push(`Invalid Product # for row: ${weld(obj)}`)
+              }
+            })
+          return { hasErrors: errorList.length >0, errorList, productRows: dataframe}
         }
       }
     }
