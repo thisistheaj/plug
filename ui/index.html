@@ -767,17 +767,15 @@
             this.showErrorList()
           } else {
             this.hideErrorList()
-            const productsDataframe = is.zipImages(productRows)
-            // convert df into catalog, by restructuring
-            const products = Object.keys(productsDataframe)
-              .map(key => ({
-                id: productsDataframe[key].id,
-                product: productsDataframe[key]
-              }))
-            this.previewProducts(products)
+            let products = is.zipImages(productRows)
+            products = is.pricesInCents(products)
+            // convert into catalog, by restructuring
+            const catalog = products.map(product => ({
+              id: product.id,
+              product,
+            }))
+            this.previewProducts(catalog)
             this.showImportPreview()
-            window.products = products
-            console.log(products)
           }
         },
         async saveStore () {
@@ -1123,7 +1121,7 @@
           return jsonData
         },
         zipImages (dataframe) {
-          return dataframe
+          dict = dataframe
             .reduce((db, next) => ({
               ...db,
               [next.id]: (next && next.price) ? {
@@ -1134,7 +1132,32 @@
                 images: [...db[next.id].images, next.images]
               }
             }), {})
+          return Object.keys(dict).map(key => dict[key])
         },
+        pricesInCents (products) {
+          const toCents = dollars => {
+            if (dollars.indexOf('.') >= 0) {
+              if (dollars.split('.').length != 2) {
+                throw new Error (`Invalid Price: ${dollars}`)
+              }
+              const d = dollars.split('.')[0]
+              const c = dollars.split('.')[1]
+              if (c.length == 2) {
+                return `${d}${c}`
+              } else if (c.length == 1) {
+                return `${d}${c}0`
+              } else {
+                throw new Error (`Invalid Price: ${dollars}`)
+              }
+            } else {
+              return `${dollars}00`
+            }
+          }
+          return products.map (product => ({
+            ...product,
+            price: toCents(product.price)             
+          }))
+        }, 
         validateRows (dataframe) {
           const errorList = []
           // Logic utils
@@ -1155,12 +1178,6 @@
             ['id', 'title','description','images','price']
           )
           const weld = arr => arr.reduce((arr, item) => arr += `, ${item}`)
-          // const first = dict => dict[Object.keys(dict)[0]]
-          // const mapDataframe = f => Object.keys(dataframe)
-          //   .reduce((dict, key) => ({
-          //     ...dict,
-          //     [key]: f(dataframe[key])
-          //   }),{})
           // Filter blank rows
           dataframe = dataframe.filter(row => not(isBlank(row)))
           // filter blank columns
