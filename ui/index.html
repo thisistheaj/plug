@@ -376,72 +376,12 @@
             </button>
             ${this.ProductTable(
               this.agent.catalog,
-              this.ProductTableDropDown()
+              this.ProductTableDropDown([
+                this.SelectAllMenuItem(),
+                this.DeselectAllMenuItem(),
+                this.DeleteSelectedMenuItem(),
+              ])
             )}
-          `
-        },
-        ProductTable (products, dropdown) {
-          return `
-            <div>
-              ${(products.length > 0) ? `
-                <table class="pure-table pure-table-bordered">
-                  <thead>
-                    <tr>
-                        ${dropdown ?
-                        `<th>${this.ProductTableDropDown()}</th>` :
-                        '<th></th>'}
-                        <th>ID</th>
-                        <th>Image</th>
-                        <th>Name</th>
-                        <th>Price</th>
-                        <th>Manage</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${products.reduce((html, product) => html + this.ProductRow(product.product), '')}
-                  </tbody>
-                </table>            
-              ` : ''}
-            </div>
-          `
-        },
-        ProductRow (product) {
-          return `
-            <tr>
-              <td class="checkbox-field"><input type="checkbox" value="" /></td>
-              <td>${product.id}</td>
-              <td><img width="50px" src="${product.images[0]}"></img></td>
-              <td>${product.title}</td>
-              <td>${this.price(product.price)} </td>
-              <td>
-                <button onclick="window.app.navigate('product', { 'product': ${this.pass(product)}})" class="pure-button">Edit</button>
-                <button class="pure-button" onclick="window.app.deleteProduct(${product.id})">Delete</button>
-              </td>
-            </tr>
-          `
-        },
-        ProductTableDropDown () {
-          return `
-            <div class="pure-menu pure-menu-vertical">
-              <ul class="pure-menu-list">
-                <li class="pure-menu-item pure-menu-allow-hover">
-                  <a href="#" class="pure-menu-link plug-menu-link">&#9776;</a>
-                  <ul class="pure-menu-children">
-                    <li class="pure-menu-item">
-                      <a onclick="window.app.selectAll()" href="#" class="pure-menu-link">
-                        Select All
-                      </a>
-                      <a onclick="window.app.deselectAll()" href="#" class="pure-menu-link">
-                        Deselect All
-                      </a>
-                      <a onclick="window.app.removeCheckedProducts()" href="#" class="pure-menu-link">
-                        Delete Selected
-                      </a>
-                    </li>
-                  </ul>
-                </li>
-              </ul>
-            </div>
           `
         },
         // Create/Edit Product Components
@@ -574,6 +514,7 @@
         ImportProductsPreview () {
           return `
             <div id="import-products-preview" class="hidden">
+              <div id="import-products-table"></div>
             </div>
           `
         },
@@ -653,7 +594,7 @@
             </div>
           `
         },
-        // Generic Components
+        // Generic/Shared Components
         PreviewButton () {
           return `
             <button class="pure-button" onclick="window.app.navigate('store-preview')">
@@ -689,6 +630,95 @@
               <div class="pure-u-5-6 mobile-hide">${content}</div>
               <div class="pure-u-1 desktop-hide">${content}</div>
               <div class="pure-u-1-12 mobile-hide"></div>
+            </div>
+          `
+        },
+        SelectAllMenuItem () {
+          return `
+            <a href="#"
+              onclick="window.app.selectAll()"
+              class="pure-menu-link"
+            >
+              Select All
+            </a>
+          `
+        },
+        DeselectAllMenuItem () {
+          return `
+            <a href="#" 
+              onclick="window.app.deselectAll()"
+              class="pure-menu-link"
+            >
+              Deselect All
+            </a>
+          `
+        },
+        DeleteSelectedMenuItem () {
+          return `
+            <a href="#"
+              onclick="window.app.removeCheckedProducts()"
+              class="pure-menu-link"
+            >
+              Delete Selected
+            </a>
+          `
+        },
+        ProductTable (products, dropdown) {
+          return `
+            <div>
+              ${(products.length > 0) ? `
+                <table class="pure-table pure-table-bordered">
+                  <thead>
+                    <tr>
+                        ${dropdown ?
+                          `<th>${dropdown}</th>` :
+                          '<th></th>'
+                        }
+                        <th>ID</th>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Manage</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${products.reduce((html, product) => html + this.ProductRow(product.product), '')}
+                  </tbody>
+                </table>            
+              ` : ''}
+            </div>
+          `
+        },
+        ProductRow (product) {
+          return `
+            <tr>
+              <td class="checkbox-field"><input type="checkbox" value="" /></td>
+              <td>${product.id}</td>
+              <td><img width="50px" src="${product.images[0]}"></img></td>
+              <td>${product.title}</td>
+              <td>${this.price(product.price)} </td>
+              <td>
+                <button onclick="window.app.navigate('product', { 'product': ${this.pass(product)}})" class="pure-button">Edit</button>
+                <button class="pure-button" onclick="window.app.deleteProduct(${product.id})">Delete</button>
+              </td>
+            </tr>
+          `
+        },
+        ProductTableDropDown (items) {
+          return `
+            <div class="pure-menu pure-menu-vertical">
+              <ul class="pure-menu-list">
+                <li class="pure-menu-item pure-menu-allow-hover">
+                  <a href="#" class="pure-menu-link plug-menu-link">&#9776;</a>
+                  <ul class="pure-menu-children">
+                    ${items.reduce((html, item) => html += `
+                      <li class="pure-menu-item">
+                        ${item}
+                      </li>
+                    `, '')}
+                  </ul>
+                </li>
+              </ul>
             </div>
           `
         },
@@ -903,12 +933,15 @@
           el.classList.add('hidden')
         },
         previewProducts (products) {
-          const el = document.getElementById('import-products-preview')
-          console.log('products', products)
-          const html = this.ProductTable(products)
-          console.log('html', html)
+          const el = document.getElementById('import-products-table')
           el.innerHTML = `
-            ${this.ProductTable(products)}
+            ${this.ProductTable(
+              products,
+              this.ProductTableDropDown([
+                this.SelectAllMenuItem(),
+                this.DeselectAllMenuItem(),
+              ])
+            )}
           `
         },
         // Controller — Logic
