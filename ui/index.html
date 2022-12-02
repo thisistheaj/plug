@@ -327,7 +327,7 @@
                       <a href="#" onclick="window.app.navigate('products')" class="pure-menu-link plug-menu-link">Products</a>
                     </li>
                     <li class="pure-menu-item">
-                      <a href="#" onclick="window.app.navigate('orders')" class="pure-menu-link plug-menu-link">Orders</a>
+                      <a href="https://app.snipcart.com/dashboard/orders" class="pure-menu-link plug-menu-link">Orders</a>
                     </li>
                     <li class="pure-menu-item">
                       <a href="#" onclick="window.app.navigate('store-settings')" class="pure-menu-link plug-menu-link">Store</a>
@@ -475,13 +475,13 @@
         // Import/Export Components
         ValidateProductsForm () {
           return `
-            <h3>Step 1 — Upload Products</h3>
+            <h3>Step 1 - Upload Products</h3>
             <form class="pure-form pure-form-stacked">
               <fieldset>
                 <p>To import many products at once, put them in an excel file like <a href="">this</a> and then copy and paste them below to upload</p>
                 <div class="pure-control-group">
-                  <label for="products-csv">Product Data:</label>
-                  <textarea id="products-csv" placeholder="Foo, bar, baz\nFoo, bar, baz"></textarea>
+                  <label for="products-csv">Product Spreadsheet:</label>
+                  <textarea style="width: 1080px; height: 360px;"id="products-csv" placeholder="product #\ttitle\tdescription\timages\tprice\n1\tSampel Product\tthis is a sample product for our sample store\thttp://random.imagecdn.app/150/150\t9.99\n2\tSampel Product 2\tthis is another sample product for our sample store\thttp://random.imagecdn.app/150/154\t19.99\n"></textarea>
                 </div>
                 ${this.ValidateProductsButton()}
               </fieldset>
@@ -491,7 +491,7 @@
         ValidateProductsErrors () {
           return `
             <div id="import-products-errors" class="hidden">
-              <h4>Step 1.2 — Fix Errors</h4>
+              <h4>Step 1.2 - Fix Errors</h4>
               <p>The following issues with the sheet need to be fixed to proceed:<p> 
               <ul id="error-list">
               </ul>
@@ -518,7 +518,7 @@
         ImportProductsPreview () {
           return `
             <div id="import-products-preview" class="hidden">
-              <h3>Step 2 — Select Products to Import</h3>
+              <h3>Step 2 - Select Products to Import</h3>
               <div id="import-products-table"></div>
               <br />
               ${this.ImportProductsButton()}
@@ -671,7 +671,7 @@
             </a>
           `
         },
-        ProductTable (products, dropdown) {
+        ProductTable (products, dropdown, editable=true) {
           return `
             <div>
               ${(products.length > 0) ? `
@@ -686,18 +686,18 @@
                         <th>Image</th>
                         <th>Name</th>
                         <th>Price</th>
-                        <th>Manage</th>
+                        ${editable ? `<th>Manage</th>` : ''}
                     </tr>
                   </thead>
                   <tbody>
-                    ${products.reduce((html, product) => html + this.ProductRow(product.product), '')}
+                    ${products.reduce((html, product) => html + this.ProductRow(product.product, editable), '')}
                   </tbody>
                 </table>            
               ` : ''}
             </div>
           `
         },
-        ProductRow (product) {
+        ProductRow (product, editable=true) {
           return `
             <tr>
               <td class="checkbox-field"><input type="checkbox" value="" /></td>
@@ -705,10 +705,12 @@
               <td><img width="50px" src="${product.images[0]}"></img></td>
               <td>${product.title}</td>
               <td>${this.price(product.price)} </td>
-              <td>
+              ${editable ?
+              `<td>
                 <button onclick="window.app.navigate('product', { 'product': ${this.pass(product)}})" class="pure-button">Edit</button>
                 <button class="pure-button" onclick="window.app.deleteProduct(${product.id})">Delete</button>
-              </td>
+              </td>`
+              : ''}
             </tr>
           `
         },
@@ -730,7 +732,7 @@
             </div>
           `
         },
-        // Controller — Lifecycle, Presentation, Interactions
+        // Controller - Lifecycle, Presentation, Interactions
         // Lifecycle
         onLoad: async function () {
           await this.agent.fetchAllStores()
@@ -963,7 +965,7 @@
             .replaceAll(`"`,`'`)
           return obj
         },
-        // Controller — Presentation
+        // Controller - Presentation
         clearCSV () {
           const el = document.getElementById('products-csv')
           el.innerHTML = ''
@@ -1001,7 +1003,8 @@
               this.ProductTableDropDown([
                 this.SelectAllMenuItem(),
                 this.DeselectAllMenuItem(),
-              ])
+              ]),
+              editable=false,
             )}
           `
           this.selectAll()
@@ -1010,7 +1013,7 @@
           const el = document.getElementById('importer-status')
           el.innerHTML = message
         },
-        // Controller — Logic
+        // Controller - Logic
         validateProduct () {
           const title = document.getElementById("product-title").value
           const description = document.getElementById("product-description").value
