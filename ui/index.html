@@ -230,8 +230,9 @@
             <div>
               ${this.Header()}
               ${this.PageContent(`
-                ${this.ImportProductsForm()}
-                ${this.ImportProductsErrors()}
+                <h1>Product Import Tool</h1>
+                ${this.ValidateProductsForm()}
+                ${this.ValidateProductsErrors()}
                 ${this.ImportProductsPreview()}
               `)}
             </div>
@@ -472,27 +473,25 @@
             </form>          `
         },
         // Import/Export Components
-        ImportProductsForm () {
+        ValidateProductsForm () {
           return `
+            <h3>Step 1 — Upload Products</h3>
             <form class="pure-form pure-form-stacked">
               <fieldset>
-                <legend>
-                  Product Import Tool
-                </legend>
                 <p>To import many products at once, put them in an excel file like <a href="">this</a> and then copy and paste them below to upload</p>
                 <div class="pure-control-group">
                   <label for="products-csv">Product Data:</label>
                   <textarea id="products-csv" placeholder="Foo, bar, baz\nFoo, bar, baz"></textarea>
                 </div>
-                ${this.ImportProductsButton()}
+                ${this.ValidateProductsButton()}
               </fieldset>
             </form>
           `
         },
-        ImportProductsErrors () {
+        ValidateProductsErrors () {
           return `
             <div id="import-products-errors" class="hidden">
-              <h3>Error Getting Products</h3>
+              <h4>Step 1.2 — Fix Errors</h4>
               <p>The following issues with the sheet need to be fixed to proceed:<p> 
               <ul id="error-list">
               </ul>
@@ -506,15 +505,24 @@
             </li>
           `
         },
+        ValidateProductsButton () {
+          return `
+            <button type="button" onclick="window.app.getProductsToImport()" class="pure-button pure-button-primary">Upload</button>
+          `
+        },
         ImportProductsButton () {
           return `
-            <button type="button" onclick="window.app.importProducts()" class="pure-button pure-button-primary">Import</button>
+            <button type="button" onclick="window.app.importProducts()" class="pure-button pure-button-primary">Import Selected</button>
           `
         },
         ImportProductsPreview () {
           return `
             <div id="import-products-preview" class="hidden">
+              <h3>Step 2 — Select Products to Import</h3>
               <div id="import-products-table"></div>
+              <br />
+              ${this.ImportProductsButton()}
+              <div id="importer-status"></div>
             </div>
           `
         },
@@ -656,7 +664,7 @@
         DeleteSelectedMenuItem () {
           return `
             <a href="#"
-              onclick="window.app.removeCheckedProducts()"
+              onclick="window.app.deleteSelectedProducts()"
               class="pure-menu-link"
             >
               Delete Selected
@@ -784,28 +792,81 @@
           this.changeStore(this.currentStore.id)
           this.navigate('dashboard')
         },
-        async importProducts () {
+        async getProductsToImport () {
+          const importer = ImportService()
           const csvData = document.getElementById('products-csv').value
           this.clearCSV()
           this.hideImportPreview()
-          const is = ImportService()
-          const rawProducts = is.csvToJSON(csvData)
-          const { hasErrors, errorList, productRows} = is.validateRows(rawProducts)
+          const rawProducts = importer.csvToJSON(csvData)
+          const { hasErrors, errorList, productRows} = importer.validateRows(rawProducts)
           if (hasErrors) {
             this.clearErrors()
             errorList.forEach(err => this.pushError(err))
             this.showErrorList()
           } else {
             this.hideErrorList()
-            let products = is.zipImages(productRows)
-            products = is.pricesInCents(products)
-            // convert into catalog, by restructuring
+            let products = importer.zipImages(productRows)
+            products = importer.pricesInCents(products)
+            // convert into a catalog, by restructuring
             const catalog = products.map(product => ({
               id: product.id,
               product,
             }))
+            this.importableProducts = catalog
             this.previewProducts(catalog)
             this.showImportPreview()
+          }
+        },
+        async importProducts () {
+          const ids = []
+          // 1. get selected ids from UI
+          document.querySelectorAll('input[type="checkbox"]')
+            .forEach(el => {
+              if (el.checked) {
+                const productId = Number(el.parentElement.nextElementSibling.innerHTML)
+                ids.push(productId)
+              }
+            })
+          // Run import on each selected id, with visibility
+          let successes = 0
+          let failures = 0
+          const failedImports = []
+          for (let index in ids) {
+            const productId = ids[index]
+            this.updateImportStatus(`<h4>Importing product # ${productId} (${index+1}/${ids.length})</h4>`)
+            try {
+              const product = this.importableProducts.filter(product => product.id == productId)[0]
+              if (!product) throw new Error(`Could not get product ${productId}`)
+              await  this.importValidatedProduct(product.product)
+              successes++
+            } catch (err) {
+              failures++
+              failedImports.push(productId)
+            }
+          }
+          if (failures == 0) {
+            this.updateImportStatus(`
+              <h2>Import Summary:</h2>
+              <h4>
+                Successfully imported ${successes} of ${ids.length} Products!
+                <a href="#" onclick="window.app.navigate('products')">
+                  View All
+                </a>
+              </h4>
+            `)
+          } else {
+            this.updateImportStatus(`
+              <h2>Import Summary:</h2>
+              <h4>Successfully imported ${successes} of ${ids.length} Products!</h4>
+              <h4>Failed to import ${failures} products:</h4>
+              <ul>
+              ${failedImports.reduce((html, id) => html += 
+                `<li class="error-list-message">Product #${id}</li>`
+              ,'')}
+              </ul>
+              <p>To avoid duplicating products, put the failed items in a new spreadsheet and retry the import.</p>
+            `)
+
           }
         },
         async saveStore () {
@@ -829,6 +890,9 @@
           const { title, description, price, images } = this.validateProduct()
           await this.agent.createProduct(this.currentStore.id, { title, description, images, price})
           this.navigate('products')
+        },
+        async importValidatedProduct ({ title, description, price, images }) {
+          await this.agent.createProduct(this.currentStore.id, { title, description, images, price})
         },
         async updateProduct (id) {
           const { title, description, price, images } = this.validateProduct()
@@ -866,7 +930,7 @@
         deselectAll() {
           document.querySelectorAll('input[type="checkbox"]').forEach(el => el.checked = false)
         },
-        removeCheckedProducts () {
+        deleteSelectedProducts () {
           document.querySelectorAll('input[type="checkbox"]').forEach(el => {
             if (el.checked) {
               const productId = Number(el.parentElement.nextElementSibling.innerHTML)
@@ -893,13 +957,10 @@
               `$${cents/100}.00`
         },
         pass (obj) {
-          const tmp = '~tmp~'
-          console.log(obj)
           obj = JSON
             .stringify(obj)
             .replaceAll(`'`,`\\\'`)
             .replaceAll(`"`,`'`)
-          console.log(obj)
           return obj
         },
         // Controller — Presentation
@@ -943,6 +1004,11 @@
               ])
             )}
           `
+          this.selectAll()
+        },
+        updateImportStatus (message) {
+          const el = document.getElementById('importer-status')
+          el.innerHTML = message
         },
         // Controller — Logic
         validateProduct () {
@@ -975,7 +1041,7 @@
 
     // Services (Model)
     function PlugAgent () {
-      const _mock = true
+      const _mock = false
       const api = _mock ? {} : new UrbitHttpApi.Urbit("")
       api.ship = window.ship;
       return {
@@ -988,7 +1054,9 @@
             app: "plug",
             mark: "plug-action",
             json: { [name]: payload },
-            onError: ()=> alert(`PlugAgent: ${name} action rejected`)
+            onError: err => {
+              alert(`Error: ${name} failed. You may need to refresh the page and try again`)
+            }
           })
         },
         _mock,
@@ -1100,7 +1168,6 @@
             const catalog = await this._scry(`/stores/${storeId}/products/all`)
             this.catalog = catalog
           }
-          console.log(JSON.stringify(this.catalog))
         },
         fetchAllStores: async function () {
           if(this._mock) {
@@ -1117,7 +1184,6 @@
             const stores = await this._scry('/stores')
             this.stores = stores
           }
-          console.log(JSON.stringify(this.stores))
         },
         refreshState: async function () {
           await this.fetchAllProducts(this.lastStoreId)
@@ -1188,7 +1254,7 @@
           }
           return products.map (product => ({
             ...product,
-            price: toCents(product.price)             
+            price: parseInt(toCents(product.price))
           }))
         }, 
         validateRows (dataframe) {
@@ -1257,9 +1323,6 @@
             ...dataframe.filter(isNewProductRow),
             ...dataframe.filter(isImageRow)
           ]
-
-          window.dataframe = dataframe
-
           // check that prices parse to float
           dataframe
             .filter(isNewProductRow)
